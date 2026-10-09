@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPT Feedback</title>
+  <script>document.documentElement.classList.add("js")</script>
+  <script id="preview-clock">
+    /* PREVIEW MODE (admin helper): open the site with ?preview=1 to get a panel for testing any date and time.
+       ?preview=2026-10-05T16:35 starts the site's clock at that Istanbul time. Without "preview" in the address this does nothing. */
+    (function () {
+      var v = new URLSearchParams(location.search).get("preview");
+      if (v === null) return;
+      var RD = Date, off = 0, m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v);
+      if (m) off = RD.UTC(+m[1], m[2] - 1, +m[3], +m[4] - 3, +m[5]) - RD.now();   // Istanbul = UTC+3 all year
+      window.__pv = true; window.__RealDate = RD;
+      function FD() {
+        var a = [].slice.call(arguments);
+        if (!(this instanceof FD)) return new RD(RD.now() + off).toString();
+        if (!a.length) return new RD(RD.now() + off);
+        return new (Function.prototype.bind.apply(RD, [null].concat(a)))();
+      }
+      FD.prototype = RD.prototype; FD.now = function () { return RD.now() + off; }; FD.UTC = RD.UTC; FD.parse = RD.parse;
+      window.Date = FD;
+    })();
+  </script>
+  <meta name="theme-color" content="#0b1230">
+  <meta name="apple-mobile-web-app-title" content="IPT Feedback">
+  <link rel="apple-touch-icon" href="assets/logo-menu.png">
+  <link rel="preload" as="image" href="assets/logo-menu.png">
+  <link rel="preload" as="image" href="assets/logo-menu.png">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    .menu-layout{display:grid;gap:1.5rem;grid-template-columns:1fr;width:100%}
+    .menu-hub{order:1;min-width:0}
+    .menu-actions{order:2;display:flex;flex-direction:column;gap:1rem;min-width:0}
+    .menu-buttons{display:grid;gap:1rem;grid-template-columns:1fr 1fr;flex:1}
+    .menu-buttons .menu-option{min-height:0}
+    .menu-right{order:3;display:flex;min-width:0}
+    .menu-extra{order:4;display:flex;min-width:0}
+    @media(min-width:1024px){
+      #menu-view.active{display:flex;align-items:center;min-height:100vh}
+      .menu-layout{grid-template-columns:1fr 1fr;align-items:stretch}
+      .menu-hub,.menu-actions,.menu-right,.menu-extra{order:0}
+    }
+    @media(max-width:640px){.menu-buttons{grid-template-columns:1fr}}
+    .meet-card{width:100%;display:flex;flex-direction:column;justify-content:space-between;gap:.7rem;padding:1.1rem 1.5rem;color:var(--t-label)}
+    .meet-title{margin:0;font-size:22px;font-weight:700;color:var(--t-title)}
+    .meet-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+    .meet-clock{margin-left:auto;font-size:22px;font-weight:700;color:var(--t-title);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .meet-sub{margin:.2rem 0 0;font-size:14px;line-height:1.5;color:var(--t-intro)}
+    .meet-list{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+    .meet-row{display:flex;align-items:center;gap:.9rem;padding:.5rem .9rem;border-radius:16px;border:1px solid var(--edge);background:rgba(255,255,255,.07)}
+    .meet-chip{min-width:4.75rem;text-align:center;font-size:14px;font-weight:700;padding:.3rem .8rem;border-radius:999px}
+    .meet-chip-6{background:linear-gradient(135deg,#fff37b,#67e8f9);color:#073d67}
+    .meet-chip-7{background:linear-gradient(135deg,#1e4f96,#3179b9);color:#effcff}
+    .meet-day{font-size:14px;color:var(--t-help)}
+    .meet-time{margin-left:auto;font-size:18px;font-weight:700;color:var(--t-title);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .meet-btn{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.85rem 1.25rem;border-radius:18px;background:linear-gradient(135deg,#52d9ca,#658ff1);color:#06214e;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 8px 22px rgba(82,217,202,.25);transition:transform .15s ease,filter .15s ease}
+    .meet-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+    .meet-btn:focus-visible{outline:2px solid #ffd54a;outline-offset:3px}
+    .meet-btn svg{width:22px;height:22px;flex:none}
+    @media(prefers-reduced-motion:reduce){.meet-btn{transition:none}.meet-btn:hover{transform:none}}
+    /* Phones: keep the Year 6 / Year 7 rows inside the card */
+    .meet-card,.meet-list,.meet-row{min-width:0;max-width:100%;box-sizing:border-box}
+    .meet-row{flex-wrap:wrap;row-gap:.2rem}
+    @media(max-width:480px){
+      .meet-card{padding:1rem}
+      .meet-row{gap:.5rem;padding:.5rem .65rem}
+      .meet-chip{min-width:4rem;font-size:13px;padding:.25rem .6rem}
+      .meet-day{font-size:13px}
+      .meet-time{font-size:15px}
+      .meet-title,.meet-clock{font-size:19px}
+    }
+    .fw-card{padding:.8rem 1rem;display:flex;flex-direction:column;gap:.5rem;color:var(--t-label)}
+    .fw-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem}
+    .fw-title{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9decE5}
+    .fw-date{font-size:13px;font-weight:600;color:var(--t-help);white-space:nowrap}
+    .fw-row{display:flex;align-items:center;gap:.75rem}
+    .fw-chip{flex:none;min-width:4.25rem;text-align:center;font-size:13px;font-weight:700;padding:.2rem .65rem;border-radius:999px}
+    .fw-chip-6{background:linear-gradient(135deg,#fff37b,#67e8f9);color:#073d67}
+    .fw-chip-7{background:linear-gradient(135deg,#1e4f96,#3179b9);color:#effcff}
+    .fw-schools{font-size:14px;font-weight:600;line-height:1.35;color:var(--t-title)}
+    .meet-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meet-row.is-next,.meet-row.is-live{border-color:rgba(121,235,221,.6);background:rgba(121,235,221,.12)}
+    .meet-dot{display:inline-block;width:8px;height:8px;margin-right:.5rem;border-radius:50%;background:#5df0a0;animation:meetPulse 1.6s infinite}
+    @keyframes meetPulse{0%{box-shadow:0 0 0 0 rgba(93,240,160,.55)}70%{box-shadow:0 0 0 8px rgba(93,240,160,0)}100%{box-shadow:0 0 0 0 rgba(93,240,160,0)}}
+    .meet-btn.is-soon{animation:meetGlow 2s ease-in-out infinite}
+    @keyframes meetGlow{0%,100%{box-shadow:0 8px 22px rgba(82,217,202,.25)}50%{box-shadow:0 8px 30px rgba(82,217,202,.65),0 0 0 4px rgba(121,235,221,.25)}}
+    @media(prefers-reduced-motion:reduce){.meet-dot,.meet-btn.is-soon{animation:none}.meet-btn.is-soon{box-shadow:0 8px 30px rgba(82,217,202,.6)}}
+    .meet-banner{display:flex;flex-direction:column;gap:.1rem;margin-top:.55rem;padding:.5rem .9rem;border-radius:16px;border:1px solid rgba(121,235,221,.5);background:linear-gradient(135deg,rgba(82,217,202,.22),rgba(101,143,241,.28));box-shadow:0 0 22px rgba(82,217,202,.22),inset 0 1px 0 rgba(255,255,255,.18)}
+    .meet-banner-label{display:flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9decE5}
+    .meet-banner-main{font-size:18px;font-weight:700;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 14px rgba(157,236,229,.45)}
+    .meet-banner.is-live{border-color:rgba(93,240,160,.7);background:linear-gradient(135deg,rgba(93,240,160,.24),rgba(82,217,202,.28));box-shadow:0 0 26px rgba(93,240,160,.32),inset 0 1px 0 rgba(255,255,255,.2)}
+    /* Glass reflection: a soft light streak slides across the banner from 15 minutes before a meeting until it ends */
+    .meet-banner{position:relative;overflow:hidden}
+    .meet-banner.is-soon::after{content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:42%;pointer-events:none;
+      background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.10) 30%,rgba(255,255,255,.42) 50%,rgba(255,255,255,.10) 70%,rgba(255,255,255,0) 100%);
+      transform:translateX(-170%) skewX(-20deg);animation:meetShine 3.4s ease-in-out infinite}
+    @keyframes meetShine{0%{transform:translateX(-170%) skewX(-20deg)}60%,100%{transform:translateX(340%) skewX(-20deg)}}
+    @media(prefers-reduced-motion:reduce){.meet-banner.is-soon::after{animation:none;opacity:0}.meet-banner.is-soon{box-shadow:0 0 30px rgba(82,217,202,.55),inset 0 1px 0 rgba(255,255,255,.18)}}
+    /* Bigger, better-centered logos */
+    .menu-hub img{width:9rem;height:9rem;object-fit:contain;margin-left:auto;margin-right:auto}
+    @media(min-width:640px){
+      .year-header img{width:clamp(8rem,14vw,11.5rem);height:auto;aspect-ratio:1/1;flex:none;align-self:center;margin-right:clamp(0rem,1.6vw,1.5rem)}
+    }
+
+    /* ===== Intro: glass Saturn spins, then the intro fades out and the boxes rise in ===== */
+    #intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;
+      background:radial-gradient(circle at 14% 12%,rgba(114,242,217,.40),transparent 27%),radial-gradient(circle at 86% 16%,rgba(151,182,255,.39),transparent 27%),linear-gradient(135deg,#020c27,#173067);
+      will-change:opacity,transform;animation:introOut .5s ease-out 1.15s forwards}
+    #intro.skip{animation:introSkip .35s ease forwards}
+    .intro-orb{position:absolute;border-radius:50%;filter:blur(5px);opacity:.5;animation:drift 9s ease-in-out infinite alternate}
+    .intro-orb.o1{width:210px;height:210px;right:-52px;top:7%;background:#7df4df}
+    .intro-orb.o2{width:260px;height:260px;left:4%;bottom:-120px;background:#7992ff;animation-delay:-3s}
+    .intro-stage{position:relative;display:grid;place-items:center}
+    .intro-stage>*{grid-area:1/1}
+    .saturn{width:min(34vw,9rem);height:auto;opacity:0;filter:drop-shadow(0 0 18px rgba(121,235,221,.35));
+      animation:saturnIn 1s cubic-bezier(.2,.8,.2,1) .1s forwards}
+    .saturn-sheen{animation:saturnSheen 1.1s ease-in-out infinite}
+    @keyframes saturnIn{0%{opacity:0;transform:scale(.6) rotate(-180deg)}40%{opacity:1}100%{opacity:1;transform:scale(1) rotate(0)}}
+    @keyframes saturnSheen{from{transform:translateX(0)}to{transform:translateX(90px)}}
+    @keyframes introOut{to{opacity:0;transform:scale(1.05)}}
+    @keyframes introSkip{to{opacity:0;visibility:hidden}}
+    @media(prefers-reduced-motion:reduce){#intro{display:none}}
+    /* ===== Staggered entrance: boxes rise in one after another ===== */
+    .js body:not(.page-ready) .rise{opacity:0}
+    .page-ready .rise{animation:riseIn .7s cubic-bezier(.2,.8,.2,1) calc(var(--i,0)*90ms) backwards}
+    @keyframes riseIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.js body:not(.page-ready) .rise{opacity:1}.page-ready .rise{animation:none}}
+    /* ===== Mini Saturn moment when opening Year 6 / Year 7 ===== */
+    .sat-wash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,var(--glow,rgba(121,235,221,.28)),transparent 46%),linear-gradient(135deg,#020c27,#173067)}
+    .sat-wash.in{animation:satWashIn .22s ease forwards}
+    .sat-wash.out{animation:satWashOut .38s ease forwards}
+    @keyframes satWashIn{to{opacity:1}}
+    @keyframes satWashOut{from{opacity:1}to{opacity:0}}
+    .sat-mini{width:min(26vw,5.5rem);height:auto;filter:drop-shadow(0 0 16px var(--glow2,rgba(121,235,221,.45)));animation:saturnIn .5s cubic-bezier(.2,.8,.2,1) .05s both}
+
+    /* ===== Speak buttons: soft, slowly rotating glow (cyan blue, teal, white, light blue) ===== */
+    @property --dg-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+    .dictate-wrap{position:relative;display:inline-flex;flex:0 0 auto;isolation:isolate}
+    .dictate-glow{position:absolute;inset:-4px;z-index:-1;border-radius:999px;pointer-events:none;filter:blur(6px);opacity:.95;transition:opacity .25s ease,transform .16s ease}
+    .dictate-glow::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:5px;
+      background:conic-gradient(from var(--dg-angle,0deg),#3fc7ff,#36d9c5,#ffffff,#a9d2ff,#3fc7ff);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+      mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+      animation:dgSpin 5.5s linear infinite,dgBreathe 3.6s ease-in-out infinite;animation-play-state:paused}
+    .dictate-wrap.in-view .dictate-glow::before{animation-play-state:running}
+    .dictate-btn:hover+.dictate-glow{transform:translateY(-2px)}
+    .dictate-btn.is-listening+.dictate-glow,.dictate-btn:disabled+.dictate-glow{opacity:0}
+    /* Desktop, while dictating: the glow around Stop follows the sound level (--voice, 0 to 1, set by script.js) */
+    .dictate-wrap.is-voice .dictate-btn.is-listening+.dictate-glow{opacity:calc(.35 + .65*var(--voice,0));inset:calc(-4px - 8px*var(--voice,0));transition:none}
+    @keyframes dgSpin{to{--dg-angle:360deg}}
+    @keyframes dgBreathe{0%,100%{opacity:.55}50%{opacity:1}}
+    @media(prefers-reduced-motion:reduce){.dictate-glow::before{animation:none;opacity:.8}}
+
+    /* ===== After a successful submit: confetti + glass thank-you box ===== */
+    .confetti-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9600}
+    .thanks-overlay{position:fixed;inset:0;z-index:9500;display:grid;place-items:center;padding:1rem;background:rgba(2,12,39,.34);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s ease}
+    .thanks-overlay.show{opacity:1}
+    .thanks-card{width:min(100%,26rem);padding:1.9rem 1.6rem 1.7rem;border-radius:28px;text-align:center;
+      background:linear-gradient(150deg,rgba(38,92,170,.62),rgba(10,28,72,.80));border:1px solid var(--edge);
+      box-shadow:0 26px 70px rgba(1,10,37,.55),0 0 40px rgba(82,217,202,.20),inset 0 1px 0 rgba(255,255,255,.2);
+      transform:translateY(16px) scale(.96);transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+    .thanks-overlay.show .thanks-card{transform:none}
+    .thanks-badge{width:64px;height:64px;margin:0 auto 1.1rem;display:grid;place-items:center;border-radius:20px;box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.4)}
+    .thanks-badge svg{width:34px;height:34px}
+    .thanks-check{stroke-dasharray:1;stroke-dashoffset:1}
+    .thanks-overlay.show .thanks-check{animation:thanksCheck .5s ease .25s forwards}
+    @keyframes thanksCheck{to{stroke-dashoffset:0}}
+    @media(prefers-reduced-motion:reduce){.thanks-overlay,.thanks-card{transition:none}.thanks-card{transform:none}.thanks-check{animation:none!important;stroke-dashoffset:0}}
+  </style>
+</head>
+<body style="background: linear-gradient(90deg, rgb(0,0,0), rgb(53,51,205));">
+  <div id="intro" aria-hidden="true">
+    <i class="intro-orb o1"></i><i class="intro-orb o2"></i>
+    <div class="intro-stage">
+      <svg class="saturn" viewBox="0 0 200 140">
+        <defs>
+          <radialGradient id="sg-body" cx="34%" cy="28%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="#bff7ee" stop-opacity=".45"/><stop offset="1" stop-color="#5a78ff" stop-opacity=".35"/></radialGradient>
+          <linearGradient id="sg-ring" x1="0" x2="1"><stop offset="0" stop-color="#79ebdd" stop-opacity=".1"/><stop offset=".5" stop-color="#eaffff" stop-opacity=".95"/><stop offset="1" stop-color="#9bb2ff" stop-opacity=".1"/></linearGradient>
+          <linearGradient id="sg-sheen" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="sg-clip"><circle cx="100" cy="70" r="34"/></clipPath>
+        </defs>
+        <g transform="rotate(-18 100 70)">
+          <path d="M16 70A84 20 0 0 1 184 70" fill="none" stroke="url(#sg-ring)" stroke-width="5" opacity=".6"/>
+          <path d="M34 70A66 15.5 0 0 1 166 70" fill="none" stroke="url(#sg-ring)" stroke-width="1.6"/>
+          <circle cx="100" cy="70" r="34" fill="url(#sg-body)" stroke="rgba(225,244,255,.55)" stroke-width="1.2"/>
+          <g clip-path="url(#sg-clip)"><g class="saturn-sheen"><rect x="46" y="30" width="18" height="80" fill="url(#sg-sheen)" transform="skewX(-18)"/></g></g>
+          <ellipse cx="88" cy="56" rx="9" ry="4.5" fill="#fff" opacity=".55" transform="rotate(-25 88 56)"/>
+          <path d="M16 70A84 20 0 0 0 184 70" fill="none" stroke="url(#sg-ring)" stroke-width="5" opacity=".75"/>
+          <path d="M34 70A66 15.5 0 0 0 166 70" fill="none" stroke="url(#sg-ring)" stroke-width="1.6"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <img class="aurora-image" src="https://images.pexels.com/photos/7130560/pexels-photo-7130560.jpeg?auto=compress&cs=tinysrgb&w=1920" alt="Soft pastel gradient with pink and blue hues">
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="orb orb-one" aria-hidden="true"></div>
+  <div class="orb orb-two" aria-hidden="true"></div>
+
+  <main id="menu-view" class="view active w-full px-4 py-6 sm:px-7">
+    <div class="menu-layout mx-auto max-w-6xl">
+      <div class="glass-panel menu-hub rise rounded-[28px] px-6 py-5 text-center" style="background:transparent;--i:0;">
+          <img class="mx-auto mb-3 h-24 w-24 object-contain" src="assets/logo-menu.png" alt="IPT logo">
+          <p class="mb-2 font-bold uppercase" style="color:#9decE5;font-size:22px;letter-spacing:.12rem;">Teacher reflection hub</p>
+          <h1 class="font-semibold" style="color:#f4f9ff;font-weight:700;font-size:30px;">IPT Feedback</h1>
+      </div>
+      <div id="schedule" class="menu-right rise" style="--i:1"></div>
+      <div id="extra" class="menu-extra rise" style="--i:2">
+        <section class="glass-panel meet-card rounded-[28px]" aria-label="Online meetings">
+          <div>
+            <div class="meet-head"><h2 class="meet-title">Online meetings</h2><span class="meet-clock" id="meet-clock" role="timer" aria-live="off" aria-label="Local time" title="Local time">--:--:--</span></div>
+            <div class="meet-banner" id="meet-banner">
+              <span class="meet-banner-label">Next meeting</span>
+              <span class="meet-banner-main">Year 7 · Monday 16:45</span>
+            </div>
+          </div>
+          <ul class="meet-list">
+            <li class="meet-row" data-day="Mon" data-start="16:45" data-end="17:15"><span class="meet-chip meet-chip-7">Year 7</span><span class="meet-day">Monday</span><span class="meet-time">16:45 – 17:15</span></li>
+            <li class="meet-row" data-day="Mon" data-start="17:40" data-end="18:10"><span class="meet-chip meet-chip-6">Year 6</span><span class="meet-day">Monday</span><span class="meet-time">17:40 – 18:10</span></li>
+          </ul>
+          <a class="meet-btn" href="https://meet.google.com/ohd-bjdt-bdo" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+            <span>Join Meeting</span>
+          </a>
+        </section>
+      </div>
+      <div class="menu-actions">
+        <section id="feedback-week" class="glass-panel fw-card rise rounded-[24px]" style="--i:3" aria-live="polite" aria-label="Feedback schools for the coming Monday"></section>
+        <section class="menu-buttons" aria-label="Choose a feedback year">
+          <button id="open-year6" type="button" class="menu-option rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="background:linear-gradient(135deg,#fff37b,#67e8f9);color:#073d67;--i:4;">
+            <span class="relative z-10 block font-bold uppercase tracking-[.14em]" style="color:#076eaa;font-size:13px;">Bright ideas ahead</span>
+            <span class="relative z-10 mt-2 block font-semibold" style="color:#073d67;font-weight:700;font-size:30px;">Year 6</span>
+            <span class="relative z-10 mt-2 block leading-relaxed" style="color:#155b83;font-size:14px;">Share vibrant reflections on your Year 6 IPT teaching experience.</span>
+            <span class="relative z-10 mt-3 inline-flex items-center gap-2 font-bold"><i data-lucide="sparkles" aria-hidden="true"></i><span style="color:#073d67;font-size:15px;">Give Year 6 feedback</span></span>
+          </button>
+          <button id="open-year7" type="button" class="menu-option rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="background:linear-gradient(135deg,#1e4f96,#3179b9);color:#effcff;--i:5;">
+            <span class="relative z-10 block font-bold uppercase tracking-[.14em]" style="color:#9decE5;font-size:13px;">Reflect and refine</span>
+            <span class="relative z-10 mt-2 block font-semibold" style="color:#f4f9ff;font-weight:700;font-size:30px;">Year 7</span>
+            <span class="relative z-10 mt-2 block leading-relaxed" style="color:#d6e4f7;font-size:14px;">Click here to share your inspiring Year 7 IPT highlights.</span>
+            <span class="relative z-10 mt-3 inline-flex items-center gap-2 font-bold"><i data-lucide="arrow-right" aria-hidden="true"></i><span style="color:#effcff;font-size:15px;">Give Year 7 feedback</span></span>
+          </button>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- The two form views are generated by script.js from the config at the top of that file -->
+  <div id="year6-view" class="view year6-theme"></div>
+  <div id="year7-view" class="view"></div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="calendar.js"></script>
+  <script id="meeting-status">
+    /* Live "next meeting" line for the meetings box. Times come from the data-* attributes on the rows above. */
+    (function () {
+      const card = document.querySelector(".meet-card");
+      if (!card) return;
+      const CFG = window.IPT_CONFIG || {};                 // meeting times, link and time zone come from config.js
+      const TZ = CFG.timezone || "Europe/Istanbul";       // meeting times are read in this time zone
+      const banner = card.querySelector(".meet-banner"), btn = card.querySelector(".meet-btn");
+      if (CFG.meetingLink) btn.setAttribute("href", CFG.meetingLink);
+      if (Array.isArray(CFG.meetings) && CFG.meetings.length) {
+        const FULL = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
+        const list = card.querySelector(".meet-list");
+        list.textContent = "";
+        CFG.meetings.forEach(m => {
+          const li = document.createElement("li");
+          li.className = "meet-row"; li.dataset.day = m.day; li.dataset.start = m.start; li.dataset.end = m.end;
+          const chip = document.createElement("span"); chip.className = "meet-chip meet-chip-" + (Number(m.year) === 6 ? 6 : 7); chip.textContent = "Year " + (Number(m.year) === 6 ? 6 : 7);
+          const day = document.createElement("span"); day.className = "meet-day"; day.textContent = FULL[m.day] || m.day;
+          const time = document.createElement("span"); time.className = "meet-time"; time.textContent = m.start + " – " + m.end;
+          li.append(chip, day, time); list.appendChild(li);
+        });
+      }
+      const labelEl = banner.querySelector(".meet-banner-label"), mainEl = banner.querySelector(".meet-banner-main");
+      const SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const W = 7 * 1440;
+      const toMin = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+      const rows = [...card.querySelectorAll(".meet-row[data-start]")];
+      const slots = rows.map(row => {
+        const day = SHORT.indexOf(row.dataset.day);
+        return { row, day, label: row.querySelector(".meet-chip").textContent.trim(),
+                 startTxt: row.dataset.start, endTxt: row.dataset.end,
+                 start: day * 1440 + toMin(row.dataset.start), end: day * 1440 + toMin(row.dataset.end) };
+      });
+
+      /*compute-start*/
+      function compute(now, slots) {
+        const live = slots.find(s => now >= s.start && now < s.end);
+        if (live) return { live: true, slot: live, diff: 0 };
+        let best = null;
+        for (const s of slots) {
+          let d = s.start - now; if (d <= 0) d += W;
+          if (!best || d < best.diff) best = { live: false, slot: s, diff: d };
+        }
+        return best;
+      }
+      function describe(now, r) {
+        const s = r.slot;
+        if (r.live) return { live: true, label: "Live now", main: `${s.label} \u00b7 until ${s.endTxt}` };
+        let main;
+        if (r.diff <= 180) {
+          const h = Math.floor(r.diff / 60), m = r.diff % 60, p = [];
+          if (h) p.push(h + " h"); if (m || !h) p.push(m + " min");
+          main = `${s.label} \u00b7 in ${p.join(" ")}`;
+        } else {
+          const nowDay = Math.floor(now / 1440) % 7, ahead = (s.day - nowDay + 7) % 7;
+          if (r.diff < 1440 && ahead === 0) main = `${s.label} \u00b7 today at ${s.startTxt}`;
+          else if (r.diff < 2880 && ahead === 1) main = `${s.label} \u00b7 tomorrow at ${s.startTxt}`;
+          else main = `${s.label} \u00b7 ${LONG[s.day]} ${s.startTxt}`;
+        }
+        return { live: false, label: "Next meeting", main };
+      }
+      /*compute-end*/
+
+      function nowInTZ() {                                // minutes since Monday 00:00 in the meeting time zone
+        let d = new Date(), day, hh, mm;
+        try {
+          const p = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d);
+          const g = t => p.find(x => x.type === t).value;
+          day = SHORT.indexOf(g("weekday")); hh = Number(g("hour")) % 24; mm = Number(g("minute"));
+        } catch (e) { day = (d.getDay() + 6) % 7; hh = d.getHours(); mm = d.getMinutes(); }
+        return day * 1440 + hh * 60 + mm;
+      }
+
+      function update() {
+        const now = nowInTZ(), r = compute(now, slots);
+        if (!r) return;
+        const d = describe(now, r);
+        labelEl.textContent = "";
+        if (r.live) { const dot = document.createElement("span"); dot.className = "meet-dot"; labelEl.appendChild(dot); }
+        labelEl.appendChild(document.createTextNode(d.label));
+        mainEl.textContent = d.main;
+        slots.forEach(s => s.row.classList.remove("is-live", "is-next"));
+        if (r.live) r.slot.row.classList.add("is-live");
+        else if (r.diff < 1440) r.slot.row.classList.add("is-next");
+        const soon = r.live || r.diff <= 15;
+        banner.classList.toggle("is-live", r.live);
+        banner.classList.toggle("is-soon", soon);
+        btn.classList.toggle("is-soon", soon);
+      }
+      update();
+      setInterval(update, 30000);
+      document.addEventListener("visibilitychange", update);
+    })();
+  </script>
+  <script id="fit-viewport">
+    /* Fits the home page to the screen on desktop: shrinks it on short screens and enlarges it on big ones
+       (up to MAX_SCALE), keeping a margin around the edges so it never scrolls. Phones/tablets are untouched. */
+    (function () {
+      const MAX_SCALE = 1.5;                               // biggest enlargement allowed (1.5 = 150%)
+      const main = document.getElementById("menu-view");
+      const layout = main && main.querySelector(".menu-layout");
+      if (!layout) return;
+      function fit() {
+        layout.style.zoom = "";
+        if (window.innerWidth < 1024 || !layout.offsetHeight) return;
+        const cs = getComputedStyle(main);
+        const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+        const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+        const availH = window.innerHeight - Math.max(padY, window.innerHeight * 0.09) - 2;   // at least ~4.5% margin top and bottom
+        const availW = Math.min(main.clientWidth - padX, window.innerWidth * 0.93);          // at least ~3.5% margin left and right
+        const baseW = parseFloat(getComputedStyle(layout).maxWidth) || 1152;
+        const zh = availH / layout.getBoundingClientRect().height;
+        const z = zh < 1 ? Math.max(zh, 0.5) : Math.min(zh, Math.max(1, availW / baseW), MAX_SCALE);
+        if (Math.abs(z - 1) > 0.005) layout.style.zoom = z;
+      }
+      window.addEventListener("resize", fit);
+      window.addEventListener("load", fit);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+      new MutationObserver(fit).observe(main, { attributes: true, attributeFilter: ["class"] });
+      fit();
+    })();
+  </script>
+<script id="intro-script">
+    /* Intro: Saturn spins, then the intro fades out and the boxes rise in one after another.
+       Click, tap, Esc, Enter or Space skips it. */
+    (function () {
+      var intro = document.getElementById("intro");
+      var ready = function () { document.body.classList.add("page-ready"); };
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!intro || reduce || window.__pv) { ready(); if (intro) intro.remove(); return; }
+      var t = setTimeout(ready, 1250);                     // boxes start rising as the intro fades
+      function done() { if (intro && intro.parentNode) intro.parentNode.removeChild(intro); intro = null; }
+      function skip() { if (!intro) return; clearTimeout(t); ready(); intro.classList.add("skip"); }
+      intro.addEventListener("animationend", function (e) { if (e.target === intro) done(); });
+      intro.addEventListener("click", skip);
+      document.addEventListener("keydown", function (e) { if (intro && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip(); });
+      setTimeout(ready, 4000);   // safety nets
+      setTimeout(done, 5000);
+    })();
+  </script>
+  <script id="saturn-transition">
+    /* Mini Saturn: clicking Year 6 / Year 7 shows a quick spinning Saturn, opens the form underneath, then fades away. */
+    (function () {
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var GLOW = { "open-year6": ["rgba(255,243,123,.30)", "rgba(255,243,123,.60)"], "open-year7": ["rgba(101,143,241,.38)", "rgba(121,235,221,.50)"] };
+      var SATURN = '<svg class="sat-mini" viewBox="0 0 200 140" aria-hidden="true"><defs>' +
+        '<radialGradient id="ms-body" cx="34%" cy="28%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="#bff7ee" stop-opacity=".45"/><stop offset="1" stop-color="#5a78ff" stop-opacity=".35"/></radialGradient>' +
+        '<linearGradient id="ms-ring" x1="0" x2="1"><stop offset="0" stop-color="#79ebdd" stop-opacity=".1"/><stop offset=".5" stop-color="#eaffff" stop-opacity=".95"/><stop offset="1" stop-color="#9bb2ff" stop-opacity=".1"/></linearGradient>' +
+        '<linearGradient id="ms-sheen" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+        '<clipPath id="ms-clip"><circle cx="100" cy="70" r="34"/></clipPath></defs>' +
+        '<g transform="rotate(-18 100 70)">' +
+        '<path d="M16 70A84 20 0 0 1 184 70" fill="none" stroke="url(#ms-ring)" stroke-width="5" opacity=".6"/>' +
+        '<path d="M34 70A66 15.5 0 0 1 166 70" fill="none" stroke="url(#ms-ring)" stroke-width="1.6"/>' +
+        '<circle cx="100" cy="70" r="34" fill="url(#ms-body)" stroke="rgba(225,244,255,.55)" stroke-width="1.2"/>' +
+        '<g clip-path="url(#ms-clip)"><g class="saturn-sheen"><rect x="46" y="30" width="18" height="80" fill="url(#ms-sheen)" transform="skewX(-18)"/></g></g>' +
+        '<ellipse cx="88" cy="56" rx="9" ry="4.5" fill="#fff" opacity=".55" transform="rotate(-25 88 56)"/>' +
+        '<path d="M16 70A84 20 0 0 0 184 70" fill="none" stroke="url(#ms-ring)" stroke-width="5" opacity=".75"/>' +
+        '<path d="M34 70A66 15.5 0 0 0 166 70" fill="none" stroke="url(#ms-ring)" stroke-width="1.6"/></g></svg>';
+      var busy = false, bypass = false;
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest && e.target.closest("#open-year6, #open-year7");
+        if (!btn || bypass || reduce) return;
+        e.stopImmediatePropagation(); e.preventDefault();
+        if (busy) return;
+        busy = true;
+        var g = GLOW[btn.id] || GLOW["open-year7"];
+        var el = document.createElement("div");
+        el.className = "sat-wash"; el.setAttribute("aria-hidden", "true");
+        el.style.setProperty("--glow", g[0]); el.style.setProperty("--glow2", g[1]);
+        el.innerHTML = SATURN;
+        document.body.appendChild(el);
+        el.classList.add("in");
+        setTimeout(function () {
+          bypass = true; btn.click(); bypass = false;
+          el.classList.remove("in"); el.classList.add("out");
+          setTimeout(function () { el.remove(); busy = false; }, 400);
+        }, 650);
+      }, true);
+    })();
+  </script>
+<script id="preview-panel">
+    /* PREVIEW MODE panel (only appears with ?preview=1 in the address). Safe to delete along with the "preview-clock" script. */
+    (function () {
+      if (!window.__pv) return;
+      var RD = window.__RealDate, IST = 3 * 36e5, DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+      var ist = function (t) { return new RD(t + IST); };                                   // read with getUTC* = Istanbul clock
+      var fmtIn = function (d) { return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()) + "T" + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+      var label = function (d) { return DAYS[d.getUTCDay()] + " " + d.getUTCDate() + " " + MON[d.getUTCMonth()] + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+      var nowT = function () { return Date.now(); };
+
+      var css = document.createElement("style");
+      css.textContent = ".pv-pill{position:fixed;left:12px;bottom:12px;z-index:9700;display:flex;align-items:center;gap:.45rem;padding:.55rem .85rem;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(3,14,44,.88);color:#eef5ff;font:600 13px/1 inherit;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35)}" +
+        ".pv-pill i{width:8px;height:8px;border-radius:50%;background:#ffd54a}" +
+        ".pv-panel{position:fixed;left:12px;bottom:56px;z-index:9700;width:min(340px,calc(100vw - 24px));max-height:78vh;overflow:auto;padding:14px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:rgba(3,14,44,.94);color:#eef5ff;font-size:13px;box-shadow:0 18px 50px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}" +
+        ".pv-panel[hidden]{display:none}.pv-panel h3{margin:0 0 2px;font-size:15px}.pv-panel p{margin:0 0 10px;color:#b9c9e6;line-height:1.4}" +
+        ".pv-now{margin:8px 0;padding:8px 10px;border-radius:12px;background:rgba(121,235,221,.14);border:1px solid rgba(121,235,221,.4);font-weight:700;font-size:14px}" +
+        ".pv-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}" +
+        ".pv-panel button,.pv-panel input{font:inherit;font-family:inherit}" +
+        ".pv-b{padding:.4rem .65rem;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#eef5ff;cursor:pointer}" +
+        ".pv-b:hover{background:rgba(255,255,255,.2)}.pv-go{background:linear-gradient(135deg,#52d9ca,#658ff1);color:#06214e;border:0;font-weight:700}" +
+        ".pv-in{flex:1;min-width:0;padding:.4rem .5rem;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;color-scheme:dark}" +
+        ".pv-h{margin:12px 0 2px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9decE5;font-weight:700}";
+      document.head.appendChild(css);
+
+      var pill = document.createElement("button");
+      pill.type = "button"; pill.className = "pv-pill"; pill.innerHTML = "<i></i><span>Preview</span>";
+      var panel = document.createElement("div");
+      panel.className = "pv-panel"; panel.hidden = true;
+      panel.innerHTML = "<h3>Preview mode</h3><p>Pick any date and time (Istanbul time) to see how the site looks then. Submissions are not sent while previewing.</p>" +
+        "<div class='pv-now' id='pv-now'></div>" +
+        "<div class='pv-h'>Jump to</div><div class='pv-row' id='pv-presets'></div>" +
+        "<div class='pv-h'>Rotation weeks</div><div class='pv-row'><button type='button' class='pv-b' id='pv-wm'>\u2190 Week</button><button type='button' class='pv-b' id='pv-wp'>Week \u2192</button></div>" +
+        "<div class='pv-h'>Exact date and time</div><div class='pv-row'><input class='pv-in' id='pv-dt' type='datetime-local'><button type='button' class='pv-b pv-go' id='pv-go'>Go</button></div>" +
+        "<div class='pv-row' style='margin-top:12px'><button type='button' class='pv-b' id='pv-real'>Real time</button><button type='button' class='pv-b' id='pv-exit'>Exit preview</button></div>";
+      document.body.appendChild(pill); document.body.appendChild(panel);
+
+      var go = function (str) { location.search = "?preview=" + str; };
+      var cur = ist(nowT());
+      document.getElementById("pv-dt").value = fmtIn(cur);
+      var nowEl = document.getElementById("pv-now");
+      var tick = function () { nowEl.textContent = "Site thinks it is: " + label(ist(nowT())); };
+      tick(); setInterval(tick, 15000);
+
+      // quick states, built around the Monday of the real current week
+      var real = ist(RD.now()), dow = (real.getUTCDay() + 6) % 7;
+      var mon0 = Date.UTC(real.getUTCFullYear(), real.getUTCMonth(), real.getUTCDate() - dow);   // Monday 00:00 (as Istanbul wall clock)
+      var at = function (dayOff, hh, mm) { return new RD(mon0 + dayOff * 864e5 + (hh * 60 + mm) * 6e4).toISOString().slice(0, 16); };
+      var presets = [["Year 7 in 15 min", 0, 16, 30], ["Year 7 live", 0, 16, 55], ["Between meetings", 0, 17, 10], ["Year 6 in 15 min", 0, 17, 25], ["Year 6 live", 0, 17, 50], ["After meetings", 0, 18, 30], ["Tuesday morning", 1, 10, 0], ["Friday noon", 4, 12, 0], ["Weekend", 5, 11, 0]];
+      var box = document.getElementById("pv-presets");
+      presets.forEach(function (p) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "pv-b"; b.textContent = p[0];
+        b.onclick = function () { go(at(p[1], p[2], p[3])); }; box.appendChild(b);
+      });
+      var shift = function (days) { go(fmtIn(ist(nowT() + days * 864e5))); };
+      document.getElementById("pv-wm").onclick = function () { shift(-7); };
+      document.getElementById("pv-wp").onclick = function () { shift(7); };
+      document.getElementById("pv-go").onclick = function () { var v = document.getElementById("pv-dt").value; if (v) go(v); };
+      document.getElementById("pv-real").onclick = function () { go("1"); };
+      document.getElementById("pv-exit").onclick = function () { location.href = location.pathname; };
+      pill.onclick = function () { panel.hidden = !panel.hidden; };
+    })();
+  </script>
+<script id="local-clock">
+    /* Live clock (hh:mm:ss, 24-hour) shown in the Online meetings card. */
+    (function () {
+      var el = document.getElementById("meet-clock");
+      if (!el) return;
+      var TZ = null;                  // null = the visitor's own local time. For meeting time use "Europe/Istanbul"
+      var fmt = null;
+      try { fmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23", timeZone: TZ || undefined }); } catch (e) {}
+      function pad(n) { return n < 10 ? "0" + n : "" + n; }
+      function tick() {
+        if (document.hidden) return;
+        var d = new Date();
+        el.textContent = fmt ? fmt.format(d) : pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+      }
+      function loop() { tick(); setTimeout(loop, 1000 - (Date.now() % 1000)); }   // stays in step with the real second
+      loop();
+      document.addEventListener("visibilitychange", tick);
+    })();
+  </script>
+
+</body>
+</html>
