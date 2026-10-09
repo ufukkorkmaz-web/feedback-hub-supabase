@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>IPT Feedback · Admin</title>
+<style>
+  :root{--bg1:#020c27;--bg2:#173067;--glass:rgba(255,255,255,.08);--edge:rgba(255,255,255,.2);--txt:#eef5ff;--dim:#b7c7e6;--teal:#52d9ca;--blue:#658ff1;--bad:#ff9a9a;--good:#9cf0c8}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{font-family:"Work Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--txt);background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+  .card{background:var(--glass);border:1px solid var(--edge);border-radius:22px;padding:22px;box-shadow:0 22px 60px rgba(1,10,37,.32),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  h1{font-size:26px;margin:0 0 4px;line-height:1.2}
+  h2{font-size:18px;margin:0}
+  p{margin:0}
+  .dim{color:var(--dim)}
+  label{display:block;font-size:13px;font-weight:600;color:var(--dim);margin:0 0 6px}
+  input,select{width:100%;padding:.7rem .85rem;border-radius:12px;border:1px solid var(--edge);background:rgba(3,14,44,.55);color:var(--txt);font:inherit}
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  select option{color:#06214e;background:#fff}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:14px;border:0;font:inherit;font-weight:700;cursor:pointer;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{background:rgba(255,255,255,.1);color:var(--txt);border:1px solid var(--edge);font-weight:600}
+  .login{max-width:420px;margin:12vh auto 0}
+  .login form{display:grid;gap:14px;margin-top:18px}
+  .msg{min-height:1.4em;font-size:14px;font-weight:600}
+  .msg.err{color:var(--bad)} .msg.ok{color:var(--good)}
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+  .chip{padding:.45rem .85rem;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);font-size:14px}
+  .chip b{color:var(--teal)}
+  .tablebox{overflow:auto;border-radius:16px;border:1px solid var(--edge);margin-top:6px;max-height:62vh}
+  table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+  th,td{padding:.6rem .75rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);vertical-align:top}
+  th{position:sticky;top:0;background:#0d2252;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);z-index:1}
+  tr.row{cursor:pointer}
+  tr.row:hover td{background:rgba(255,255,255,.06)}
+  tr.detail td{background:rgba(3,14,44,.5);padding:1rem 1.2rem}
+  .q{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-top:10px}
+  .q:first-child{margin-top:0}
+  .ans{white-space:pre-wrap;word-break:break-word}
+  .tag{display:inline-block;padding:.1rem .6rem;border-radius:999px;font-weight:700;font-size:12px;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
+  .tag.y6{background:linear-gradient(135deg,#fff15d,#35c9f4)}
+  .empty{padding:2rem;text-align:center;color:var(--dim)}
+  [hidden]{display:none!important}
+  @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== Login ===== -->
+  <section id="login" class="card login" hidden>
+    <h1>IPT Feedback</h1>
+    <p class="dim">Admin sign-in</p>
+    <form id="login-form" autocomplete="on">
+      <div><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <button class="btn" id="login-btn" type="submit">Sign in</button>
+      <p class="msg" id="login-msg" role="alert"></p>
+    </form>
+  </section>
+
+  <!-- ===== Dashboard ===== -->
+  <section id="dash" hidden>
+    <div class="top">
+      <div><h1>IPT Feedback</h1><p class="dim" id="who"></p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn ghost" href="index.html" style="text-decoration:none">Back to site</a>
+        <button class="btn ghost" id="logout" type="button">Sign out</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <div><label for="period">Period</label>
+          <select id="period">
+            <option value="this">This week (Mon–Sun)</option>
+            <option value="last">Last week</option>
+            <option value="4w">Last 4 weeks</option>
+            <option value="all">All time</option>
+            <option value="custom">Choose dates…</option>
+          </select></div>
+        <div id="from-box" hidden><label for="from">From</label><input id="from" type="date"></div>
+        <div id="to-box" hidden><label for="to">To</label><input id="to" type="date"></div>
+        <div><label for="yr">Year level</label>
+          <select id="yr"><option value="">Year 6 and Year 7</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
+        <div><label for="find">Search</label><input id="find" type="search" placeholder="Name, email or words"></div>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Date</th><th>Year</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>No feedback for this selection.</div>
+      </div>
+      <p class="dim" style="font-size:13px;margin-top:8px">Click a row to read the full answers.</p>
+
+      <div class="actions">
+        <button class="btn" id="xlsx" type="button">Download Excel</button>
+        <button class="btn ghost" id="refresh" type="button">Refresh</button>
+      </div>
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+  </section>
+
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CFG = window.IPT_CONFIG || {};
+  var URL_ = (CFG.supabaseUrl || "").replace(/\/+$/, ""), KEY = CFG.supabaseKey || "";
+  var TZ = CFG.timezone || "Europe/Istanbul";
+  var $ = function (id) { return document.getElementById(id); };
+  var SKEY = "ipt-admin-session";
+  var session = null, all = [], shown = [];
+
+  /* ---------- small helpers ---------- */
+  function say(el, text, kind) { el.textContent = text || ""; el.className = "msg" + (kind ? " " + kind : ""); }
+  function fmtDay(d) { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }   // YYYY-MM-DD
+  function fmtTime(d) { return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d); }
+  function addDays(ymd, n) { var t = new Date(ymd + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+  function mondayOf(ymd) { var t = new Date(ymd + "T00:00:00Z"); return addDays(ymd, -((t.getUTCDay() + 6) % 7)); }
+  function nice(ymd) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }
+
+  /* ---------- talking to Supabase (plain web requests, no extra library) ---------- */
+  function saveSession(s) {
+    session = s;
+    try { s ? sessionStorage.setItem(SKEY, JSON.stringify(s)) : sessionStorage.removeItem(SKEY); } catch (e) {}
+  }
+  function loadSession() { try { return JSON.parse(sessionStorage.getItem(SKEY) || "null"); } catch (e) { return null; } }
+  function toSession(j) { return { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: (j.user && j.user.email) || "" }; }
+
+  async function signIn(email, pass) {
+    var r = await fetch(URL_ + "/auth/v1/token?grant_type=password", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ email: email, password: pass }) });
+    if (!r.ok) throw new Error(r.status === 400 || r.status === 401 ? "Wrong email or password." : "Could not sign in (" + r.status + ").");
+    saveSession(toSession(await r.json()));
+  }
+  async function refresh() {
+    if (!session || !session.refresh) throw new Error("expired");
+    var r = await fetch(URL_ + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ refresh_token: session.refresh }) });
+    if (!r.ok) throw new Error("expired");
+    var j = await r.json(); if (!j.user) j.user = { email: session.email };
+    saveSession(toSession(j));
+  }
+  async function signOut() {
+    var s = session; saveSession(null);
+    try { if (s) await fetch(URL_ + "/auth/v1/logout", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + s.access } }); } catch (e) {}
+  }
+  async function api(path) {
+    if (!session) throw new Error("expired");
+    if (Date.now() > session.exp - 30000) await refresh();
+    var r = await fetch(URL_ + path, { headers: { apikey: KEY, Authorization: "Bearer " + session.access } });
+    if (r.status === 401) { await refresh(); r = await fetch(URL_ + path, { headers: { apikey: KEY, Authorization: "Bearer " + session.access } }); }
+    if (!r.ok) throw new Error("Could not load the feedback (" + r.status + ").");
+    return r.json();
+  }
+  async function loadAll() {
+    var out = [], step = 1000, from = 0;
+    for (;;) {
+      var part = await api("/rest/v1/feedback?select=*&order=created_at.desc&limit=" + step + "&offset=" + from);
+      out = out.concat(part); if (part.length < step) break; from += step;
+    }
+    return out;
+  }
+
+  /* ---------- screens ---------- */
+  function showLogin(note) { $("dash").hidden = true; $("login").hidden = false; say($("login-msg"), note || "", note ? "err" : ""); setTimeout(function () { $("em").focus(); }, 50); }
+  function showDash() { $("login").hidden = true; $("dash").hidden = false; $("who").textContent = "Signed in as " + (session.email || "admin"); }
+
+  async function reload() {
+    say($("msg"), "Loading…");
+    try { all = (await loadAll()).map(prep); say($("msg"), ""); render(); }
+    catch (e) { if (e.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); } else say($("msg"), e.message, "err"); }
+  }
+  function prep(r) {
+    var d = new Date(r.created_at), day = fmtDay(d);
+    r._d = d; r._day = day; r._time = fmtTime(d); r._mon = mondayOf(day); return r;
+  }
+
+  /* ---------- filters ---------- */
+  function range() {
+    var p = $("period").value, today = fmtDay(new Date()), mon = mondayOf(today);
+    if (p === "this") return [mon, addDays(mon, 6)];
+    if (p === "last") return [addDays(mon, -7), addDays(mon, -1)];
+    if (p === "4w") return [addDays(mon, -21), addDays(mon, 6)];
+    if (p === "custom") return [$("from").value || "0000-01-01", $("to").value || "9999-12-31"];
+    return ["0000-01-01", "9999-12-31"];
+  }
+  function filtered() {
+    var r = range(), y = $("yr").value, q = $("find").value.trim().toLowerCase();
+    return all.filter(function (x) {
+      if (x._day < r[0] || x._day > r[1]) return false;
+      if (y && String(x.year) !== y) return false;
+      if (q && ![x.email, x.week, x.worked, x.challenge, x.plan, x.notes].join(" ").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+  function avg(list, k) { var v = list.map(function (x) { return x[k]; }).filter(function (n) { return typeof n === "number"; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; }
+  function f1(n) { return n === null ? "–" : (Math.round(n * 10) / 10).toFixed(1); }
+
+  function chip(label, value) { var s = document.createElement("span"); s.className = "chip"; s.append(label + " "); var b = document.createElement("b"); b.textContent = value; s.append(b); return s; }
+  function cell(tr, text, node) { var td = document.createElement("td"); if (node) td.append(node); else td.textContent = text; tr.append(td); return td; }
+
+  function render() {
+    shown = filtered();
+    var st = $("stats"); st.textContent = "";
+    st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
+    var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
+    shown.forEach(function (x) {
+      var tr = document.createElement("tr"); tr.className = "row"; tr.tabIndex = 0;
+      cell(tr, nice(x._day) + ", " + x._time);
+      var tag = document.createElement("span"); tag.className = "tag " + (x.year === 6 ? "y6" : "y7"); tag.textContent = "Year " + x.year; cell(tr, "", tag);
+      cell(tr, x.week); cell(tr, x.email);
+      ["overall", "resources", "engagement", "clarity"].forEach(function (k) { cell(tr, x[k] == null ? "–" : String(x[k])); });
+      var dt = null;
+      function toggle() {
+        if (dt) { dt.remove(); dt = null; return; }
+        dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 8;
+        [["What worked well?", x.worked], ["What didn't work?", x.challenge], ["Shape the next plan", x.plan], ["One more thought", x.notes]].forEach(function (p) {
+          if (!p[1]) return;
+          var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
+          var a = document.createElement("div"); a.className = "ans"; a.textContent = p[1]; td.append(q, a);
+        });
+        dt.append(td); tr.after(dt);
+      }
+      tr.addEventListener("click", toggle);
+      tr.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      tb.append(tr);
+    });
+  }
+
+  /* ---------- Excel ---------- */
+  function sheetFrom(list) {
+    var subCol = "Submitted (" + TZ + ")";
+    var rows = list.slice().sort(function (a, b) { return a._d - b._d; }).map(function (x) {
+      return {
+        [subCol]: x._day + " " + x._time, "Week of (Monday)": x._mon, "Year level": "Year " + x.year, "Week": x.week, "Email": x.email,
+        "What worked well?": x.worked || "", "What didn't work?": x.challenge || "", "Shape the next plan": x.plan || "",
+        "Overall rating (1-5)": x.overall, "Teaching resources (1-5)": x.resources, "Student engagement (1-5)": x.engagement, "Objectives clarity (1-5)": x.clarity,
+        "One more thought": x.notes || ""
+      };
+    });
+    var ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ "No feedback": "" }]);
+    ws["!cols"] = [{ wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 50 }];
+    return ws;
+  }
+  function summarySheet(list) {
+    var groups = {};
+    list.forEach(function (x) { var k = x._mon + "|" + x.year; (groups[k] = groups[k] || []).push(x); });
+    var rows = Object.keys(groups).sort().map(function (k) {
+      var g = groups[k], p = k.split("|");
+      function a(f) { var v = avg(g, f); return v === null ? "" : Math.round(v * 100) / 100; }
+      return { "Week of (Monday)": p[0], "Year level": "Year " + p[1], "Responses": g.length, "Average overall": a("overall"), "Average resources": a("resources"), "Average engagement": a("engagement"), "Average clarity": a("clarity") };
+    });
+    var ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ "No feedback": "" }]);
+    ws["!cols"] = [{ wch: 16 }, { wch: 10 }, { wch: 11 }, { wch: 16 }, { wch: 18 }, { wch: 19 }, { wch: 15 }];
+    return ws;
+  }
+  function download() {
+    if (!window.XLSX) return say($("msg"), "The Excel tool could not load. Check your connection and refresh the page.", "err");
+    if (!shown.length) return say($("msg"), "There is no feedback in this selection to download.", "err");
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheetFrom(shown), "All feedback");
+    var y6 = shown.filter(function (x) { return x.year === 6; }), y7 = shown.filter(function (x) { return x.year === 7; });
+    if (y6.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y6), "Year 6");
+    if (y7.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y7), "Year 7");
+    XLSX.utils.book_append_sheet(wb, summarySheet(shown), "Summary");
+    var days = shown.map(function (x) { return x._day; }).sort();
+    XLSX.writeFile(wb, "IPT-feedback_" + days[0] + "_to_" + days[days.length - 1] + ".xlsx");
+    say($("msg"), "Downloaded " + shown.length + " response" + (shown.length === 1 ? "" : "s") + ".", "ok");
+  }
+
+  /* ---------- wiring ---------- */
+  if (!URL_ || !KEY) {
+    document.querySelector(".wrap").innerHTML = '<section class="card login"><h1>Not set up yet</h1><p class="dim" style="margin-top:8px">Add the Supabase address and key to config.js, then reload this page.</p></section>';
+    return;
+  }
+  $("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault(); var b = $("login-btn"); b.disabled = true; say($("login-msg"), "Signing in…");
+    try { await signIn($("em").value.trim(), $("pw").value); $("pw").value = ""; say($("login-msg"), ""); showDash(); await reload(); }
+    catch (err) { say($("login-msg"), err.message || "Could not sign in.", "err"); }
+    b.disabled = false;
+  });
+  $("logout").addEventListener("click", async function () { await signOut(); all = []; shown = []; showLogin(); });
+  $("refresh").addEventListener("click", reload);
+  $("xlsx").addEventListener("click", download);
+  $("period").addEventListener("change", function () { var c = $("period").value === "custom"; $("from-box").hidden = !c; $("to-box").hidden = !c; render(); });
+  ["from", "to", "yr"].forEach(function (id) { $(id).addEventListener("change", render); });
+  $("find").addEventListener("input", render);
+
+  session = loadSession();
+  if (session) { showDash(); reload(); } else showLogin();
+})();
+</script>
+</body>
+</html>
