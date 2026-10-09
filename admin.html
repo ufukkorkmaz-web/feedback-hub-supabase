@@ -119,7 +119,8 @@
 (function () {
   "use strict";
   var CFG = window.IPT_CONFIG || {};
-  var URL_ = (CFG.supabaseUrl || "").replace(/\/+$/, ""), KEY = CFG.supabaseKey || "";
+  var URL_ = (function (u) { u = String(u || "").trim(); try { return u ? new URL(u).origin : ""; } catch (e) { return u.replace(/\/+$/, ""); } })(CFG.supabaseUrl);   // only the address itself, whatever was pasted after it
+  var KEY = String(CFG.supabaseKey || "").trim();
   var TZ = CFG.timezone || "Europe/Istanbul";
   var $ = function (id) { return document.getElementById(id); };
   var SKEY = "ipt-admin-session";
