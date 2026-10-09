@@ -9,7 +9,7 @@ window.IPT_CONFIG = {
 
   /* ----- Where feedback is sent (your Formspree form address) ----- */
   // Your own database (Supabase). Fill these in after the set-up steps; while they are empty, Formspree is still used.
-  supabaseUrl: "https://hceltuncmajojiyhzlcl.supabase.co/rest/v1/",
+  supabaseUrl: "https://hceltuncmajojiyhzlcl.supabase.co",
   supabaseKey: "sb_publishable_AewQ2fT439tNreacQXUKYg_RRXBA2Xq",
   formEndpoint: "https://formspree.io/f/xbglqzql",
 
@@ -56,6 +56,6 @@ window.IPT_CONFIG = {
     { q: "When are the online meetings?",
       a: "The Online meetings box lists the times. The Join Meeting button and the Next meeting banner shine from 15 minutes before a meeting until it ends." },
     { q: "Who receives my feedback?",
-      a: "It is sent by email to the IPT team together with the school email address you entered, so they can follow up if needed." }
+      a: "It is saved securely and only the IPT team can read it, together with the school email address you entered, so they can follow up if needed." }
   ]
 };
