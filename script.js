@@ -4,6 +4,28 @@
 const CFG = window.IPT_CONFIG || {};
 const FORM_ENDPOINT = CFG.formEndpoint || "https://formspree.io/f/xbglqzql";
 
+// Where feedback is stored. If config.js has a Supabase address and key, feedback goes to your own database;
+// if not, it still goes to Formspree as before, so the site never breaks half-way through a set-up.
+const SUPABASE_URL = (CFG.supabaseUrl || "").replace(/\/+$/, ""), SUPABASE_KEY = CFG.supabaseKey || "";
+function sendFeedback(p) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(p) });
+  }
+  const num = v => { const n = parseInt(v, 10); return n >= 1 && n <= 5 ? n : null; };
+  const row = {
+    year: /7/.test(p["Year level"]) ? 7 : 6, week: p["Week"], email: p.email,
+    worked: p["What worked well?"], challenge: p["What didn't work?"], plan: p["Shape the next plan"],
+    overall: num(p["Overall rating of the week (1-5)"]), resources: num(p["Effectiveness of teaching resources (1-5)"]),
+    engagement: num(p["Student engagement (1-5)"]), clarity: num(p["Learning objectives clarity (1-5)"]),
+    notes: p["One more thought"] || null
+  };
+  return fetch(SUPABASE_URL + "/rest/v1/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Prefer": "return=minimal" },
+    body: JSON.stringify(row)
+  });
+}
+
 // Only school emails from this domain can open the questions
 const ALLOWED_EMAIL_DOMAIN = CFG.emailDomain || "bilfen.k12.tr";
 const EMAIL_WARNING = "Please enter with your Bilfen credentials. Your school email must end with @" + ALLOWED_EMAIL_DOMAIN + ".";
@@ -86,7 +108,7 @@ async function outboxFlush(manual) {
   try {
     while (list.length) {
       let res;
-      try { res = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(list[0].payload) }); }
+      try { res = await sendFeedback(list[0].payload); }
       catch (err) { break; }                                              // still offline
       if (res.status >= 500 || res.status === 429) break;                 // server busy: try again later
       if (res.ok) sent++; else dropped++;                                 // a refused reflection would never succeed, so it is not kept
@@ -294,7 +316,7 @@ function setupForm(y) {
     };
     try {
       let res = null;
-      try { res = await fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(pretty) }); }
+      try { res = await sendFeedback(pretty); }
       catch (netErr) { res = null; }                              // no connection
       if (!res || res.status >= 500 || res.status === 429) {      // cannot send right now: keep it and send automatically later
         outboxAdd(pretty, y); clearForm();
