@@ -6,7 +6,8 @@ const FORM_ENDPOINT = CFG.formEndpoint || "https://formspree.io/f/xbglqzql";
 
 // Where feedback is stored. If config.js has a Supabase address and key, feedback goes to your own database;
 // if not, it still goes to Formspree as before, so the site never breaks half-way through a set-up.
-const SUPABASE_URL = (CFG.supabaseUrl || "").replace(/\/+$/, ""), SUPABASE_KEY = CFG.supabaseKey || "";
+const SUPABASE_URL = (u => { u = String(u || "").trim(); try { return u ? new URL(u).origin : ""; } catch (err) { return u.replace(/\/+$/, ""); } })(CFG.supabaseUrl);   // only the address itself, whatever was pasted after it
+const SUPABASE_KEY = String(CFG.supabaseKey || "").trim();
 function sendFeedback(p) {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return fetch(FORM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(p) });
@@ -23,6 +24,13 @@ function sendFeedback(p) {
     method: "POST",
     headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Prefer": "return=minimal" },
     body: JSON.stringify(row)
+  }).then(res => {
+    // Saved safely. Now also send the e-mail copy through Formspree. It never delays or breaks the real submission,
+    // and it only runs after a successful save, so a retry later cannot send the same e-mail twice.
+    if (res.ok && CFG.emailCopy !== false && FORM_ENDPOINT) {
+      try { fetch(FORM_ENDPOINT, { method: "POST", keepalive: true, headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(p) }).catch(() => {}); } catch (err) {}
+    }
+    return res;
   });
 }
 
