@@ -22,6 +22,7 @@
   select option{color:#06214e;background:#fff}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:14px;border:0;font:inherit;font-weight:700;cursor:pointer;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
   .btn:disabled{opacity:.55;cursor:default}
+  .btn.danger{background:rgba(255,120,120,.16);color:#ffd2d2;border:1px solid rgba(255,150,150,.5);font-weight:600;padding:.5rem 1rem}
   .btn.ghost{background:rgba(255,255,255,.1);color:var(--txt);border:1px solid var(--edge);font-weight:600}
   .login{max-width:420px;margin:12vh auto 0}
   .login form{display:grid;gap:14px;margin-top:18px}
@@ -124,6 +125,7 @@
   var TZ = CFG.timezone || "Europe/Istanbul";
   var $ = function (id) { return document.getElementById(id); };
   var SKEY = "ipt-admin-session";
+  var TEST_EMAIL = String(CFG.testEmail || "keepalive.test@bilfen.k12.tr").toLowerCase();   // the automatic keep-alive entries; hidden everywhere on this page
   var session = null, all = [], shown = [];
 
   /* ---------- small helpers ---------- */
@@ -158,12 +160,13 @@
     var s = session; saveSession(null);
     try { if (s) await fetch(URL_ + "/auth/v1/logout", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + s.access } }); } catch (e) {}
   }
-  async function api(path) {
+  async function api(path, method) {
     if (!session) throw new Error("expired");
     if (Date.now() > session.exp - 30000) await refresh();
-    var r = await fetch(URL_ + path, { headers: { apikey: KEY, Authorization: "Bearer " + session.access } });
-    if (r.status === 401) { await refresh(); r = await fetch(URL_ + path, { headers: { apikey: KEY, Authorization: "Bearer " + session.access } }); }
-    if (!r.ok) throw new Error("Could not load the feedback (" + r.status + ").");
+    function go() { return fetch(URL_ + path, { method: method || "GET", headers: { apikey: KEY, Authorization: "Bearer " + session.access, Prefer: "return=representation" } }); }
+    var r = await go();
+    if (r.status === 401) { await refresh(); r = await go(); }
+    if (!r.ok) throw new Error("Request failed (" + r.status + ").");
     return r.json();
   }
   async function loadAll() {
@@ -181,7 +184,7 @@
 
   async function reload() {
     say($("msg"), "Loading…");
-    try { all = (await loadAll()).map(prep); say($("msg"), ""); render(); }
+    try { all = (await loadAll()).filter(function (r) { return String(r.email).toLowerCase() !== TEST_EMAIL; }).map(prep); say($("msg"), ""); render(); }
     catch (e) { if (e.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); } else say($("msg"), e.message, "err"); }
   }
   function prep(r) {
@@ -233,6 +236,24 @@
           var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
           var a = document.createElement("div"); a.className = "ans"; a.textContent = p[1]; td.append(q, a);
         });
+        var bar = document.createElement("div"); bar.style.cssText = "margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";
+        var del = document.createElement("button"); del.type = "button"; del.className = "btn danger"; del.textContent = "Delete this feedback";
+        var info = document.createElement("span"); info.className = "dim"; info.style.fontSize = "13px";
+        var armed = 0;
+        del.addEventListener("click", async function (e) {
+          e.stopPropagation();
+          if (!armed) { armed = 1; del.textContent = "Click again to delete for good"; info.textContent = "This cannot be undone."; setTimeout(function () { if (armed === 1) { armed = 0; del.textContent = "Delete this feedback"; info.textContent = ""; } }, 5000); return; }
+          if (armed === 2) return; armed = 2; del.disabled = true; del.textContent = "Deleting…";
+          try {
+            var gone = await api("/rest/v1/feedback?id=eq." + encodeURIComponent(x.id), "DELETE");
+            if (!gone.length) throw new Error("Nothing was deleted. Check that you are signed in as the admin.");
+            all = all.filter(function (z) { return z.id !== x.id; }); render(); say($("msg"), "Feedback deleted.", "ok");
+          } catch (err) {
+            if (err.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); return; }
+            armed = 0; del.disabled = false; del.textContent = "Delete this feedback"; info.textContent = ""; say($("msg"), err.message, "err");
+          }
+        });
+        bar.append(del, info); td.append(bar);
         dt.append(td); tr.after(dt);
       }
       tr.addEventListener("click", toggle);
