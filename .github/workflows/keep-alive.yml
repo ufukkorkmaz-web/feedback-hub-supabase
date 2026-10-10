@@ -1,0 +1,24 @@
+name: Keep database awake
+
+on:
+  schedule:
+    - cron: "17 5 */3 * *"     # every 3 days at 05:17 UTC (08:17 in Istanbul)
+  workflow_dispatch: {}        # lets you also run it by hand from the Actions tab
+
+jobs:
+  send-test-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send a test feedback
+        env:
+          SUPABASE_URL: https://hceltuncmajojiyhzlcl.supabase.co
+          SUPABASE_KEY: sb_publishable_AewQ2fT439tNreacQXUKYg_RRXBA2Xq     # the public key, safe to keep here
+        run: |
+          code=$(curl --silent --show-error --max-time 30 --output /dev/null --write-out "%{http_code}" \
+            -X POST "$SUPABASE_URL/rest/v1/feedback" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"year":7,"week":"TEST","email":"keepalive.test@bilfen.k12.tr","worked":"Automatic test entry that keeps the database active. Safe to ignore.","challenge":"-","plan":"-","overall":3,"resources":3,"engagement":3,"clarity":3}')
+          echo "Supabase answered: $code"
+          test "$code" = "201"
