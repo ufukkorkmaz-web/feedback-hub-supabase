@@ -11,6 +11,7 @@ window.IPT_CONFIG = {
   // Your own database (Supabase). Fill these in after the set-up steps; while they are empty, Formspree is still used.
   supabaseUrl: "https://hceltuncmajojiyhzlcl.supabase.co",
   supabaseKey: "sb_publishable_AewQ2fT439tNreacQXUKYg_RRXBA2Xq",
+  emailCopy: true,                                    // true = every saved feedback is also e-mailed through Formspree (free plan: about 50 a month). false = database only.
   formEndpoint: "https://formspree.io/f/xbglqzql",
 
   /* ----- Only school emails ending with this can open the questions ----- */
