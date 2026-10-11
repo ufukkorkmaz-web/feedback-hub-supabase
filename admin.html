@@ -124,6 +124,8 @@
   .rc footer{margin-top:6px;font-size:12px;color:#52514e}
   .rfoot{margin-top:28px;padding-top:12px;border-top:1px solid #dfe5f1;font-size:12px;color:#52514e}
   @media (max-width:640px){.rhead{padding:22px 20px}.rbody{padding:20px}.rhead h1{font-size:25px}}
+  .pdf-stage{position:absolute;left:0;top:0;width:794px;z-index:-1;background:#fff}
+  .pdf-stage .pdf-page{margin:0!important;max-width:none!important;width:794px!important;border-radius:0!important;box-shadow:none!important}
   @media print{
     @page{margin:12mm}
     html,body{background:#fff!important}
@@ -626,14 +628,21 @@
     btn.disabled = true; btn.textContent = "Preparing PDF…";
     var done = function () { btn.disabled = false; btn.textContent = label; };
     try {
-      var el = $("rpage"); $("report").scrollTop = 0; inlineSvgStyles(el);
+      var src = $("rpage"); inlineSvgStyles(src);
+      // A plain copy of the report that simply fills the PDF page. (Do not set a window width or an offset here:
+      // the PDF tool measures the real window itself, and a different number shifts the whole page sideways.)
+      var copy = src.cloneNode(true); copy.removeAttribute("id");
+      copy.style.cssText = "width:100%;max-width:none;margin:0;border-radius:0;box-shadow:none;overflow:visible";
+      var pageW = 733;                                           // width of the printable A4 area in screen pixels (194 mm)
+      var h = Math.max(1, src.scrollHeight * (src.offsetWidth / pageW) * 1.05);
+      var scale = Math.max(0.7, Math.min(2, 32000 / h, Math.sqrt(24e6 / (pageW * h))));   // very long reports are drawn a little smaller so the browser can cope
       window.html2pdf().set({
         margin: [8, 8, 10, 8], filename: pdfName(),
-        image: { type: "jpeg", quality: 0.96 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0, windowWidth: 920 },
+        image: { type: "jpeg", quality: 0.95 },
+        html2canvas: { scale: scale, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: -window.scrollY },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"], avoid: [".rc", ".chart-card", ".tile", ".rq h3", ".rsec h2", ".rhead"] }
-      }).from(el).save().then(done).catch(function () { done(); window.print(); });
+      }).from(copy).save().then(done).catch(function () { done(); window.print(); });
     } catch (e) { done(); window.print(); }
   }
   function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
