@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>IPT Feedback · System health</title>
+<style>
+  :root{--bg1:#020c27;--bg2:#173067;--glass:rgba(255,255,255,.08);--edge:rgba(255,255,255,.2);--txt:#eef5ff;--dim:#b7c7e6;--teal:#52d9ca;--blue:#658ff1;--bad:#ff9a9a;--good:#9cf0c8}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{font-family:"Work Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--txt);background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+  .card{background:var(--glass);border:1px solid var(--edge);border-radius:22px;padding:22px;box-shadow:0 22px 60px rgba(1,10,37,.32),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  h1{font-size:26px;margin:0 0 4px;line-height:1.2}
+  h2{font-size:18px;margin:0}
+  p{margin:0}
+  .dim{color:var(--dim)}
+  label{display:block;font-size:13px;font-weight:600;color:var(--dim);margin:0 0 6px}
+  input,select{width:100%;padding:.7rem .85rem;border-radius:12px;border:1px solid var(--edge);background:rgba(3,14,44,.55);color:var(--txt);font:inherit}
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  select option{color:#06214e;background:#fff}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:14px;border:0;font:inherit;font-weight:700;cursor:pointer;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.danger{background:rgba(255,120,120,.16);color:#ffd2d2;border:1px solid rgba(255,150,150,.5);font-weight:600;padding:.5rem 1rem}
+  .btn.ghost{background:rgba(255,255,255,.1);color:var(--txt);border:1px solid var(--edge);font-weight:600}
+  .login{max-width:420px;margin:12vh auto 0}
+  .login form{display:grid;gap:14px;margin-top:18px}
+  .msg{min-height:1.4em;font-size:14px;font-weight:600}
+  .msg.err{color:var(--bad)} .msg.ok{color:var(--good)}
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+  .chip{padding:.45rem .85rem;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);font-size:14px}
+  .chip b{color:var(--teal)}
+  .tablebox{overflow:auto;border-radius:16px;border:1px solid var(--edge);margin-top:6px;max-height:62vh}
+  table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+  th,td{padding:.6rem .75rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);vertical-align:top}
+  th{position:sticky;top:0;background:#0d2252;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);z-index:1}
+  tr.row{cursor:pointer}
+  tr.row:hover td{background:rgba(255,255,255,.06)}
+  tr.detail td{background:rgba(3,14,44,.5);padding:1rem 1.2rem}
+  .q{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-top:10px}
+  .q:first-child{margin-top:0}
+  .ans{white-space:pre-wrap;word-break:break-word}
+  .tag{display:inline-block;padding:.1rem .6rem;border-radius:999px;font-weight:700;font-size:12px;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
+  .tag.y6{background:linear-gradient(135deg,#fff15d,#35c9f4)}
+  .empty{padding:2rem;text-align:center;color:var(--dim)}
+  [hidden]{display:none!important}
+  @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
+  .hc-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--edge)}
+  .hc-row:first-child{border-top:0}
+  .hc-ic{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;line-height:1}
+  .hc-ok .hc-ic{background:rgba(156,240,200,.18);color:var(--good)}
+  .hc-warn .hc-ic{background:rgba(255,205,110,.18);color:#ffd27a}
+  .hc-bad .hc-ic{background:rgba(255,154,154,.18);color:var(--bad)}
+  .hc-info .hc-ic{background:rgba(255,255,255,.12);color:var(--dim)}
+  .hc-t{font-weight:600}.hc-d{color:var(--dim);font-size:14px;margin-top:2px}
+  .hc-sum{padding:.7rem 1rem;border-radius:14px;border:1px solid var(--edge);margin:14px 0 6px;font-weight:600}
+  .hc-sum.hc-ok{background:rgba(156,240,200,.1)}.hc-sum.hc-warn{background:rgba(255,205,110,.1)}.hc-sum.hc-bad{background:rgba(255,154,154,.1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="login" class="card login" hidden>
+    <h1>System health</h1>
+    <p class="dim">Admin sign-in</p>
+    <form id="login-form" autocomplete="on">
+      <div><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <button class="btn" id="login-btn" type="submit">Sign in</button>
+      <p class="msg" id="login-msg" role="alert"></p>
+    </form>
+  </section>
+
+  <section id="dash" hidden>
+    <div class="top">
+      <div><h1>System health</h1><p class="dim" id="who"></p></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn ghost" href="admin.html" style="text-decoration:none">Admin</a>
+        <button class="btn ghost" id="logout" type="button">Sign out</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="top" style="margin:0"><h2>Checks</h2><span><span class="dim" id="upd" style="font-size:13px;margin-right:10px"></span><button class="btn ghost" id="hc-run" type="button">Check now</button></span></div>
+      <div id="hc-sum" class="hc-sum" role="status">Checking…</div>
+      <div id="hc-list"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CFG = window.IPT_CONFIG || {};
+  var URL_ = (function (u) { u = String(u || "").trim(); try { return u ? new URL(u).origin : ""; } catch (e) { return u.replace(/\/+$/, ""); } })(CFG.supabaseUrl);
+  var KEY = String(CFG.supabaseKey || "").trim();
+  var TZ = CFG.timezone || "Europe/Istanbul";
+  var TEST_EMAIL = String(CFG.testEmail || "keepalive.test@bilfen.k12.tr").toLowerCase();
+  var AUTO_MS = 2 * 60 * 1000;
+  var $ = function (id) { return document.getElementById(id); };
+  var SKEY = "ipt-admin-session", session = null, all = [], busy = false;
+  var lastTest = null, lastMs = null, lastOk = null, lastErr = "";
+
+  function say(el, text, kind) { el.textContent = text || ""; el.className = "msg" + (kind ? " " + kind : ""); }
+  function fmtDay(d) { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }   // YYYY-MM-DD
+  function fmtTime(d) { return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d); }
+  function addDays(ymd, n) { var t = new Date(ymd + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+  function mondayOf(ymd) { var t = new Date(ymd + "T00:00:00Z"); return addDays(ymd, -((t.getUTCDay() + 6) % 7)); }
+  function nice(ymd) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }
+
+  /* ---------- talking to Supabase (plain web requests, no extra library) ---------- */
+  function saveSession(s) {
+    session = s;
+    try { s ? sessionStorage.setItem(SKEY, JSON.stringify(s)) : sessionStorage.removeItem(SKEY); } catch (e) {}
+  }
+  function loadSession() { try { return JSON.parse(sessionStorage.getItem(SKEY) || "null"); } catch (e) { return null; } }
+  function toSession(j) { return { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: (j.user && j.user.email) || "" }; }
+
+  async function signIn(email, pass) {
+    var r = await fetch(URL_ + "/auth/v1/token?grant_type=password", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ email: email, password: pass }) });
+    if (!r.ok) throw new Error(r.status === 400 || r.status === 401 ? "Wrong email or password." : "Could not sign in (" + r.status + ").");
+    saveSession(toSession(await r.json()));
+  }
+  async function refresh() {
+    if (!session || !session.refresh) throw new Error("expired");
+    var r = await fetch(URL_ + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ refresh_token: session.refresh }) });
+    if (!r.ok) throw new Error("expired");
+    var j = await r.json(); if (!j.user) j.user = { email: session.email };
+    saveSession(toSession(j));
+  }
+  async function signOut() {
+    var s = session; saveSession(null);
+    try { if (s) await fetch(URL_ + "/auth/v1/logout", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + s.access } }); } catch (e) {}
+  }
+  async function api(path, method) {
+    if (!session) throw new Error("expired");
+    if (Date.now() > session.exp - 30000) await refresh();
+    function go() { return fetch(URL_ + path, { method: method || "GET", headers: { apikey: KEY, Authorization: "Bearer " + session.access, Prefer: "return=representation" } }); }
+    var r = await go();
+    if (r.status === 401) { await refresh(); r = await go(); }
+    if (!r.ok) throw new Error("Request failed (" + r.status + ").");
+    return r.json();
+  }
+  async function loadAll() {
+    var out = [], step = 1000, from = 0;
+    for (;;) {
+      var part = await api("/rest/v1/feedback?select=*&order=created_at.desc&limit=" + step + "&offset=" + from);
+      out = out.concat(part); if (part.length < step) break; from += step;
+    }
+    return out;
+  }
+
+  function showLogin(note) { $("dash").hidden = true; $("login").hidden = false; say($("login-msg"), note || "", note ? "err" : ""); setTimeout(function () { $("em").focus(); }, 50); }
+  function showDash() { $("login").hidden = true; $("dash").hidden = false; $("who").textContent = "Signed in as " + (session.email || "admin"); }
+
+  function ago(d) {
+    var m = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+    if (m < 1) return "just now"; if (m < 60) return m + " min ago";
+    var h = Math.round(m / 60); if (h < 48) return h + (h === 1 ? " hour ago" : " hours ago");
+    var dd = Math.round(h / 24); return dd + " days ago";
+  }
+  function hcRow(level, title, detail) {
+    var r = document.createElement("div"); r.className = "hc-row hc-" + level;
+    var ic = document.createElement("span"); ic.className = "hc-ic"; ic.setAttribute("aria-hidden", "true"); ic.textContent = { ok: "✓", warn: "!", bad: "✕", info: "i" }[level];
+    var box = document.createElement("div"), t = document.createElement("div"), d = document.createElement("div");
+    t.className = "hc-t"; t.textContent = title; d.className = "hc-d"; d.textContent = detail; box.append(t, d); r.append(ic, box);
+    r.dataset.level = level; return r;
+  }
+  function renderHealth() {
+    var list = $("hc-list"); if (!list) return; list.textContent = "";
+    var rows = [];
+    // database
+    if (lastOk === false) rows.push(hcRow("bad", "Database", "Could not reach it" + (lastErr ? " (" + lastErr.replace(/\.$/, "") + ")" : "") + ". Check your internet, or whether the Supabase project is paused."));
+    else if (lastMs === null) rows.push(hcRow("info", "Database", "Not checked yet."));
+    else rows.push(hcRow(lastMs > 3000 ? "warn" : "ok", "Database", (lastMs > 3000 ? "Slow: " : "Reachable: ") + "answered in " + (lastMs < 1000 ? lastMs + " ms" : (lastMs / 1000).toFixed(1) + " s") + ", " + all.length + (all.length === 1 ? " feedback entry" : " feedback entries") + " stored."));
+    // keep-alive
+    if (lastOk === false) rows.push(hcRow("info", "Keep-alive", "Can’t be checked while the database is unreachable."));
+    else if (!lastTest) rows.push(hcRow("bad", "Keep-alive", "No automatic test entry found. The GitHub workflow may not have run yet, or may be switched off. Open the Actions tab on GitHub and run “Keep database awake” once."));
+    else {
+      var days = (Date.now() - lastTest.getTime()) / 864e5;
+      rows.push(hcRow(days <= 4 ? "ok" : days <= 7 ? "warn" : "bad", "Keep-alive",
+        "Last automatic test entry " + ago(lastTest) + ". It should arrive every 3 days." + (days > 4 ? " It is late: check the Actions tab on GitHub (GitHub pauses scheduled jobs in repositories with no activity for 60 days)." : "")));
+    }
+    // last real submission
+    if (all.length) { var newest = all.reduce(function (a, b) { return a._d > b._d ? a : b; }); rows.push(hcRow("info", "Latest feedback", "Year " + newest.year + ", week " + newest.week + ", received " + ago(newest._d) + " (" + newest._day + " " + newest._time + ").")); }
+    else rows.push(hcRow("info", "Latest feedback", "No feedback has arrived yet."));
+    // session
+    if (session) { var left = Math.round((session.exp - Date.now()) / 60000); rows.push(hcRow("ok", "Your sign-in", "Signed in as " + (session.email || "admin") + ". It renews itself while this page is open" + (left > 0 ? " (current token valid for " + left + " more min)." : "."))); }
+    // email copy
+    rows.push(hcRow("info", "Email copy (Formspree)", CFG.emailCopy === false ? "Switched off in config.js." : "Switched on in config.js. This page can’t see whether the emails arrive, so check your inbox if they seem to have stopped."));
+    // browser
+    rows.push(hcRow(navigator.onLine === false ? "bad" : "ok", "This computer", navigator.onLine === false ? "Offline." : "Online, auto-refresh every " + (AUTO_MS / 60000) + " minutes."));
+    rows.forEach(function (r) { list.append(r); });
+    var bad = rows.filter(function (r) { return r.dataset.level === "bad"; }).length, warn = rows.filter(function (r) { return r.dataset.level === "warn"; }).length;
+    var sum = $("hc-sum"), lvl = bad ? "bad" : warn ? "warn" : "ok";
+    sum.className = "hc-sum hc-" + lvl;
+    sum.textContent = (lvl === "ok" ? "✓ Everything looks healthy" : lvl === "warn" ? "! " + warn + (warn === 1 ? " thing" : " things") + " to look at" : "✕ " + bad + (bad === 1 ? " problem needs" : " problems need") + " attention") + " · checked " + fmtTime(new Date());
+  }
+
+  async function check(silent) {
+    if (busy) return; busy = true;
+    try {
+      var t0 = Date.now(), raw = await loadAll(); lastMs = Date.now() - t0; lastOk = true;
+      var tests = raw.filter(function (r) { return String(r.email).toLowerCase() === TEST_EMAIL; });
+      lastTest = tests.length ? new Date(tests.reduce(function (a, b) { return a.created_at > b.created_at ? a : b; }).created_at) : null;
+      all = raw.filter(function (r) { return String(r.email).toLowerCase() !== TEST_EMAIL; }).map(function (r) { var d = new Date(r.created_at); r._d = d; r._day = fmtDay(d); r._time = fmtTime(d); return r; });
+      $("upd").textContent = "Updated " + fmtTime(new Date()); renderHealth();
+    } catch (e) {
+      if (e.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); }
+      else { lastOk = false; lastErr = e.message; renderHealth(); }
+    }
+    busy = false;
+  }
+
+  if (!URL_ || !KEY) { document.querySelector(".wrap").innerHTML = '<section class="card login"><h1>Not set up yet</h1><p class="dim" style="margin-top:8px">Add the Supabase address and key to config.js, then reload this page.</p></section>'; return; }
+  $("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault(); var b = $("login-btn"); b.disabled = true; say($("login-msg"), "Signing in…");
+    try { await signIn($("em").value.trim(), $("pw").value); $("pw").value = ""; say($("login-msg"), ""); showDash(); check(); }
+    catch (err) { say($("login-msg"), err.message, "err"); }
+    b.disabled = false;
+  });
+  $("logout").addEventListener("click", async function () { await signOut(); showLogin(); });
+  $("hc-run").addEventListener("click", function () { check(); });
+  setInterval(function () { if (session && !document.hidden && !$("dash").hidden) check(true); }, AUTO_MS);
+  session = loadSession();
+  if (session) { showDash(); check(); } else showLogin();
+})();
+</script>
+</body>
+</html>
