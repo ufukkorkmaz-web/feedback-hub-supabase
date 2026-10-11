@@ -216,7 +216,7 @@
 <div class="report" id="report" hidden>
   <div class="rbar"><strong>Report preview</strong>
     <span style="display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap">
-      <label class="chk"><input type="checkbox" id="rnames"> Show who wrote each comment</label>
+      <label class="chk"><input type="checkbox" id="rnames"> Show the sender’s email on each comment</label>
       <button class="btn" id="rprint" type="button">Print / Save as PDF</button>
       <button class="btn ghost" id="rclose" type="button">Close</button>
     </span></div>
@@ -568,7 +568,7 @@
   /* ================= REPORT (a designed page you can print or save as PDF) ================= */
   var showNames = false;
   function cap(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : w; }
-  function who(x) { return showNames ? String(x.email).split("@")[0].split(/[._-]+/).map(cap).join(" ") : "Colleague"; }
+  function who(x) { return showNames ? String(x.email) : "Colleague"; }
   function periodText() {
     var p = $("period").value, r = range();
     if (p === "all") return "All time";
