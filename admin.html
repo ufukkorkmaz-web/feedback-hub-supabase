@@ -622,6 +622,29 @@
     var days = shown.map(function (x) { return x._day; }).sort();
     return "IPT-feedback-report" + (days.length ? "_" + days[0] + "_to_" + days[days.length - 1] : "") + ".pdf";
   }
+  /* Keeps every chart, tile row and comment whole in the PDF: if one would be cut by a page edge, it is moved down to the next page.
+     The PDF tool slices its picture of the report every pageH pixels, so we measure the copy at the same width and add space where needed. */
+  function keepBlocksWhole(root, pageW, pageH) {
+    var host = document.createElement("div");
+    host.style.cssText = "position:absolute;left:-10000px;top:0;width:" + pageW + "px;margin:0;padding:0";
+    root.style.width = pageW + "px"; host.appendChild(root); document.body.appendChild(host);
+    try {
+      var list = root.querySelectorAll(".rhead, .tiles, .chart-card, .rc, .rsec h2, .rq h3");
+      for (var i = 0; i < list.length; i++) {
+        var el = list[i], base = root.getBoundingClientRect().top, r = el.getBoundingClientRect();
+        var top = r.top - base, h = r.height, isHead = el.tagName === "H2" || el.tagName === "H3";
+        var need = isHead ? h + (el.tagName === "H2" ? 150 : 90) : h;       // a heading must keep company with what follows it
+        if (need >= pageH) continue;
+        var page = Math.floor(top / pageH);
+        if (top + need > (page + 1) * pageH) {
+          var push = (page + 1) * pageH - top + 2;
+          if (getComputedStyle(el.parentNode).display === "grid") el.style.marginTop = push + "px";      // grid items never merge their margins
+          else { var sp = document.createElement("div"); sp.style.cssText = "height:" + push + "px;margin:0;padding:0"; el.parentNode.insertBefore(sp, el); }   // a spacer, because neighbouring margins would otherwise swallow part of the push
+        }
+      }
+    } finally { root.style.width = "100%"; document.body.removeChild(host); host.removeChild(root); }
+    return root;
+  }
   function savePdf() {
     var btn = $("rsave"), label = btn.textContent;
     if (!window.html2pdf) { window.print(); return; }
@@ -633,15 +656,16 @@
       // the PDF tool measures the real window itself, and a different number shifts the whole page sideways.)
       var copy = src.cloneNode(true); copy.removeAttribute("id");
       copy.style.cssText = "width:100%;max-width:none;margin:0;border-radius:0;box-shadow:none;overflow:visible";
-      var pageW = 733;                                           // width of the printable A4 area in screen pixels (194 mm)
-      var h = Math.max(1, src.scrollHeight * (src.offsetWidth / pageW) * 1.05);
+      var pageW = 733, pageH = Math.floor(279 * 96 / 25.4);      // the printable A4 area in screen pixels (194 mm wide, 279 mm tall)
+      keepBlocksWhole(copy, pageW, pageH);
+      var h = Math.max(1, src.scrollHeight * (src.offsetWidth / pageW) * 1.15);
       var scale = Math.max(0.7, Math.min(2, 32000 / h, Math.sqrt(24e6 / (pageW * h))));   // very long reports are drawn a little smaller so the browser can cope
       window.html2pdf().set({
         margin: [8, 8, 10, 8], filename: pdfName(),
         image: { type: "jpeg", quality: 0.95 },
         html2canvas: { scale: scale, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: -window.scrollY },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"], avoid: [".rc", ".chart-card", ".tile", ".rq h3", ".rsec h2", ".rhead"] }
+        pagebreak: { mode: ["css"] }
       }).from(copy).save().then(done).catch(function () { done(); window.print(); });
     } catch (e) { done(); window.print(); }
   }
