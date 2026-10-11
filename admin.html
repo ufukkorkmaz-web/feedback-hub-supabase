@@ -49,6 +49,92 @@
   .empty{padding:2rem;text-align:center;color:var(--dim)}
   [hidden]{display:none!important}
   @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
+  /* ===== charts ===== */
+  .viz{--surface:#14285a;--tx:#f0efec;--tx2:#c3c2b7;--grid:rgba(255,255,255,.14);--y6:#d95926;--y7:#3987e5;--o1:#256abf;--o2:#3987e5;--o3:#6da7ec;--o4:#9ec5f4;--o5:#cde2fb;--hov:rgba(255,255,255,.08)}
+  .viz.light{--surface:#ffffff;--tx:#0b0b0b;--tx2:#52514e;--grid:rgba(0,0,0,.1);--y6:#eb6834;--y7:#2a78d6;--o1:#86b6ef;--o2:#5598e7;--o3:#2a78d6;--o4:#1c5cab;--o5:#104281;--hov:rgba(0,0,0,.05)}
+  .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-top:14px}
+  .chart-card{background:rgba(3,14,44,.34);border:1px solid var(--edge);border-radius:18px;padding:14px 16px;min-width:0}
+  .chart-card h3{margin:0;font-size:15px}
+  .chart-card .cap,.cap{margin:2px 0 8px;font-size:13px;color:var(--dim)}
+  .chart-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--edge);border-radius:999px;overflow:hidden}
+  .seg button{border:0;background:transparent;color:var(--dim);font:inherit;font-size:13px;font-weight:600;padding:.3rem .8rem;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e}
+  .viz svg{width:100%;height:auto;display:block}
+  .viz .grid{stroke:var(--grid);stroke-width:1}
+  .viz .ax{fill:var(--tx2);font-size:11px}
+  .viz .val{fill:var(--tx);font-size:11px;font-weight:600}
+  .viz .lab{fill:var(--tx);font-size:12px}
+  .viz .big{fill:var(--tx);font-size:26px;font-weight:700}
+  .viz path.m6,.viz path.m7,.viz circle.m6,.viz circle.m7{stroke:none}
+  .viz .m6{fill:var(--y6)} .viz .m7{fill:var(--y7)}
+  .viz .ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .viz .l6{stroke:var(--y6)} .viz .l7{stroke:var(--y7)}
+  .viz .dot{stroke:var(--surface);stroke-width:2}
+  .viz .o1{fill:var(--o1)} .viz .o2{fill:var(--o2)} .viz .o3{fill:var(--o3)} .viz .o4{fill:var(--o4)} .viz .o5{fill:var(--o5)}
+  .viz .slice{stroke:var(--surface);stroke-width:2}
+  .viz .hit{fill:transparent}
+  .viz .hit:hover{fill:var(--hov)}
+  .viz .slice:hover{opacity:.85}
+  .lg-row{display:flex;gap:16px;margin:0 0 4px;font-size:13px;color:var(--tx2)}
+  .lg{display:inline-flex;align-items:center;gap:6px}
+  .lg .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .lg .m6{background:var(--y6)} .lg .m7{background:var(--y7)}
+  .chart-empty{padding:1.6rem 1rem;text-align:center;color:var(--dim);font-size:14px}
+  .tv{margin-top:6px;font-size:13px;color:var(--tx2)}
+  .tv summary{cursor:pointer;width:max-content}
+  table.mini{min-width:0;width:100%;margin-top:6px;font-size:13px}
+  table.mini th{position:static;background:transparent;padding:.3rem .5rem}
+  table.mini td{padding:.3rem .5rem}
+  .chart-tip{position:fixed;z-index:9999;padding:.4rem .65rem;border-radius:10px;background:rgba(3,14,44,.97);border:1px solid var(--edge);color:#eef5ff;font-size:13px;pointer-events:none;max-width:300px}
+  /* ===== report page ===== */
+  .report{position:fixed;inset:0;z-index:2000;background:#e6ebf4;overflow:auto;color:#14213d}
+  .rbar{position:sticky;top:0;z-index:5;display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:10px 16px;background:#0d2252;color:#eef5ff}
+  .rbar .chk{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;color:#eef5ff;font-weight:500}
+  .rbar .chk input{width:auto}
+  .rpage{max-width:920px;margin:18px auto 40px;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(13,34,82,.25);overflow:hidden}
+  .rhead{background:linear-gradient(135deg,#020c27,#173067);color:#fff;padding:30px 38px;display:flex;gap:20px;align-items:center;justify-content:space-between}
+  .rkick{margin:0 0 6px;font-size:12px;letter-spacing:.16em;color:#79ebdd;font-weight:700}
+  .rhead h1{font-family:Georgia,"Times New Roman",serif;font-size:32px;line-height:1.15;margin:0;color:#fff}
+  .rsub{margin:8px 0 0;color:#c9d6f2;font-size:14px}
+  .rlogo{height:46px;width:auto;flex:none}
+  .rbody{padding:26px 38px 30px}
+  .rsec{margin-top:26px}
+  .rsec:first-child{margin-top:0}
+  .rsec h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 10px;color:#0d2252;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .rbody .cap{color:#52514e}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
+  .tile{border:1px solid #dfe5f1;border-radius:14px;padding:12px 14px;background:#fbfcfe}
+  .tile span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#52514e;font-weight:600}
+  .tile b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.15;color:#0d2252}
+  .tile b small{font-size:14px;color:#52514e;font-weight:400}
+  .tile .sub6{font-size:12px;color:#52514e;margin-top:6px}
+  .meter{height:6px;border-radius:99px;background:#e6ecf7;overflow:hidden;margin-top:8px}
+  .meter i{display:block;height:100%;background:linear-gradient(90deg,#52d9ca,#2a78d6);border-radius:99px}
+  .rgrid{display:grid;grid-template-columns:1fr;gap:14px}
+  .rgrid .chart-card svg{max-width:640px;margin:0 auto}
+  .rgrid .wide{grid-column:1/-1}
+  .rbody .chart-card{background:#fbfcfe;border:1px solid #dfe5f1}
+  .rbody .chart-card h3{color:#0d2252}
+  .ypill{display:inline-block;font-family:system-ui,sans-serif;font-size:13px;font-weight:700;padding:.15rem .7rem;border-radius:999px;color:#fff;background:var(--yc)}
+  .ry6{--yc:#eb6834} .ry7{--yc:#2a78d6}
+  .rq h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#52514e;margin:16px 0 6px}
+  .rc{margin:8px 0;padding:10px 14px;border-left:4px solid var(--yc);background:#f4f7fc;border-radius:0 10px 10px 0}
+  .rc p{margin:0;white-space:pre-wrap;word-break:break-word;color:#14213d}
+  .rc footer{margin-top:6px;font-size:12px;color:#52514e}
+  .rfoot{margin-top:28px;padding-top:12px;border-top:1px solid #dfe5f1;font-size:12px;color:#52514e}
+  @media (max-width:640px){.rhead{padding:22px 20px}.rbody{padding:20px}.rhead h1{font-size:25px}}
+  @media print{
+    @page{margin:12mm}
+    html,body{background:#fff!important}
+    body.has-report .wrap,.chart-tip{display:none!important}
+    .report{position:static;overflow:visible;background:#fff}
+    .rbar{display:none}
+    .rpage{box-shadow:none;margin:0;max-width:none;border-radius:0}
+    .rc,.chart-card,.tile,.rq h3{break-inside:avoid}
+    .rsec h2{break-after:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
 </style>
 </head>
 <body>
@@ -106,13 +192,35 @@
 
       <div class="actions">
         <button class="btn" id="xlsx" type="button">Download Excel</button>
+        <button class="btn" id="report-btn" type="button">Weekly report</button>
         <button class="btn ghost" id="refresh" type="button">Refresh</button>
         <span class="dim" id="upd" style="align-self:center;font-size:13px"></span>
       </div>
       <p class="msg" id="msg" role="status"></p>
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="top" style="margin:0"><h2>Charts</h2><span class="dim" style="font-size:13px">They follow the period and year you chose above.</span></div>
+      <div class="chart-grid viz">
+        <div class="chart-card"><h3>Scores by category</h3><p class="cap">Average score out of 5</p><div id="ch-cats"></div></div>
+        <div class="chart-card"><h3>Week by week</h3><p class="cap">Average overall rating</p><div id="ch-trend"></div></div>
+        <div class="chart-card"><div class="chart-head"><div><h3>How the week was rated</h3><p class="cap">Share of each overall rating</p></div>
+          <div class="seg" role="group" aria-label="Chart type"><button id="dist-pie" type="button" aria-pressed="true">Pie</button><button id="dist-bar" type="button" aria-pressed="false">Bars</button></div></div>
+          <div id="ch-dist"></div></div>
+      </div>
+    </div>
   </section>
 
+</div>
+
+<div class="report" id="report" hidden>
+  <div class="rbar"><strong>Report preview</strong>
+    <span style="display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap">
+      <label class="chk"><input type="checkbox" id="rnames"> Show who wrote each comment</label>
+      <button class="btn" id="rprint" type="button">Print / Save as PDF</button>
+      <button class="btn ghost" id="rclose" type="button">Close</button>
+    </span></div>
+  <div class="rpage viz light" id="rpage"></div>
 </div>
 
 <script src="config.js"></script>
@@ -234,6 +342,7 @@
     shown = filtered();
     var st = $("stats"); st.textContent = "";
     st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
+    renderCharts();
     var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
     shown.forEach(function (x) {
       var tr = document.createElement("tr"); tr.className = "row"; tr.tabIndex = 0;
@@ -319,6 +428,185 @@
     say($("msg"), "Downloaded " + shown.length + " response" + (shown.length === 1 ? "" : "s") + ".", "ok");
   }
 
+  /* ================= CHARTS (plain SVG, no outside library) ================= */
+  var SCORE_NAMES = ["Needs significant improvement", "Needs improvement", "Satisfactory", "Very good", "Excellent"];
+  var CATS = [["overall", "Overall"], ["resources", "Resources"], ["engagement", "Engagement"], ["clarity", "Clarity"]];
+  var distMode = "pie";
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function r1(n) { return Math.round(n * 10) / 10; }
+  function cnt(list, k) { return list.filter(function (x) { return typeof x[k] === "number"; }).length; }
+  function barPath(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h));
+    return "M" + x + "," + (y + h) + "L" + x + "," + (y + r) + "Q" + x + "," + y + " " + (x + r) + "," + y + "L" + (x + w - r) + "," + y + "Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + r) + "L" + (x + w) + "," + (y + h) + "Z";
+  }
+  function shortDay(ymd) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short" }); }
+  function tableHTML(head, rows) {
+    return '<table class="mini"><thead><tr>' + head.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + esc(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table>";
+  }
+  var NONE = '<div class="chart-empty">No feedback in this selection.</div>';
+  function legend(years) {
+    return '<div class="lg-row">' + years.map(function (y) { return '<span class="lg"><i class="sw m' + y + '"></i>Year ' + y + "</span>"; }).join("") + "</div>";
+  }
+  function yearsOf(list) { return [6, 7].filter(function (y) { return list.some(function (x) { return x.year === y; }); }); }
+
+  /* 1) Average score in each category, Year 6 next to Year 7 */
+  function chartCats(list) {
+    var years = yearsOf(list); if (!years.length) return { svg: NONE, table: "" };
+    var W = 520, H = 250, L = 30, R = 8, T = 20, B = 30, pw = W - L - R, ph = H - T - B, k = years.length;
+    var o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Average score in each category">';
+    for (var t = 0; t <= 5; t++) { var gy = T + ph - ph * t / 5; o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + t + "</text>"; }
+    var gw = pw / CATS.length, bw = Math.min(24, (gw * 0.72 - 2 * (k - 1)) / k), total = k * bw + 2 * (k - 1), rows = [];
+    CATS.forEach(function (c, gi) {
+      var gx = L + gi * gw + (gw - total) / 2, row = [c[1]];
+      years.forEach(function (y, si) {
+        var sub = list.filter(function (x) { return x.year === y; }), v = avg(sub, c[0]), n = cnt(sub, c[0]);
+        row.push(v === null ? "–" : r1(v).toFixed(1));
+        if (v === null) return;
+        var x = gx + si * (bw + 2), h = ph * v / 5, yy = T + ph - h, tip = "Year " + y + " · " + c[1] + ": " + r1(v).toFixed(1) + " (" + n + (n === 1 ? " response)" : " responses)");
+        o += '<path class="m' + y + '" d="' + barPath(x, yy, bw, h, 4) + '"/><text class="val" x="' + (x + bw / 2) + '" y="' + (yy - 5) + '" text-anchor="middle">' + r1(v).toFixed(1) + "</text>";
+        o += '<rect class="hit" x="' + (x - 1) + '" y="' + T + '" width="' + (bw + 2) + '" height="' + ph + '" data-tip="' + esc(tip) + '"/>';
+      });
+      o += '<text class="ax" x="' + (L + gi * gw + gw / 2) + '" y="' + (H - 10) + '" text-anchor="middle">' + c[1] + "</text>";
+      rows.push(row);
+    });
+    o += "</svg>";
+    return { svg: legend(years) + o, table: tableHTML(["Category"].concat(years.map(function (y) { return "Year " + y; })), rows) };
+  }
+
+  /* 2) Overall rating, week by week */
+  function chartTrend(list) {
+    var weeks = Object.keys(list.reduce(function (a, x) { a[x._mon] = 1; return a; }, {})).sort().slice(-12), years = yearsOf(list);
+    if (!weeks.length) return { svg: NONE, table: "" };
+    var W = 520, H = 250, L = 30, R = 14, T = 16, B = 30, pw = W - L - R, ph = H - T - B, n = weeks.length;
+    var xs = function (i) { return n === 1 ? L + pw / 2 : L + 14 + i * (pw - 28) / (n - 1); }, ys = function (v) { return T + ph - (v - 1) / 4 * ph; };
+    var o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Overall rating week by week">';
+    for (var t = 1; t <= 5; t++) { var gy = ys(t); o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + t + "</text>"; }
+    var step = Math.ceil(n / 7);
+    weeks.forEach(function (w, i) { if (i % step === 0 || i === n - 1) o += '<text class="ax" x="' + xs(i) + '" y="' + (H - 10) + '" text-anchor="middle">' + shortDay(w) + "</text>"; });
+    var rows = weeks.map(function (w) { return [shortDay(w)]; }), dots = "", hits = "";
+    years.forEach(function (y) {
+      var seg = [], path = "";
+      weeks.forEach(function (w, i) {
+        var sub = list.filter(function (x) { return x.year === y && x._mon === w; }), v = avg(sub, "overall");
+        rows[i].push(v === null ? "–" : r1(v).toFixed(1) + " (" + cnt(sub, "overall") + ")");
+        if (v === null) { if (seg.length) { path += "M" + seg.join("L"); seg = []; } return; }
+        seg.push(xs(i) + "," + ys(v));
+        var tip = "Year " + y + " · week of " + shortDay(w) + ": " + r1(v).toFixed(1) + " overall (" + cnt(sub, "overall") + " " + (cnt(sub, "overall") === 1 ? "response)" : "responses)");
+        dots += '<circle class="dot m' + y + '" cx="' + xs(i) + '" cy="' + ys(v) + '" r="4.5"/>';
+        hits += '<circle class="hit" cx="' + xs(i) + '" cy="' + ys(v) + '" r="13" data-tip="' + esc(tip) + '"/>';
+      });
+      if (seg.length) path += "M" + seg.join("L");
+      o += '<path class="ln l' + y + '" d="' + path + '"/>';
+    });
+    o += dots + hits + "</svg>";
+    return { svg: legend(years) + o, table: tableHTML(["Week of"].concat(years.map(function (y) { return "Year " + y + " (responses)"; })), rows) };
+  }
+
+  /* 3) How the week was rated: share of each rating (pie or bars) */
+  function arcPath(cx, cy, R, r, a0, a1) {
+    var p = function (rad, a) { return (cx + rad * Math.sin(a)).toFixed(2) + "," + (cy - rad * Math.cos(a)).toFixed(2); }, big = a1 - a0 > Math.PI ? 1 : 0;
+    return "M" + p(R, a0) + "A" + R + "," + R + " 0 " + big + " 1 " + p(R, a1) + "L" + p(r, a1) + "A" + r + "," + r + " 0 " + big + " 0 " + p(r, a0) + "Z";
+  }
+  function chartDist(list, mode) {
+    var counts = [0, 0, 0, 0, 0], total = 0;
+    list.forEach(function (x) { if (typeof x.overall === "number" && x.overall >= 1 && x.overall <= 5) { counts[x.overall - 1]++; total++; } });
+    if (!total) return { svg: NONE, table: "" };
+    var rows = [5, 4, 3, 2, 1].map(function (s) { return [s + " · " + SCORE_NAMES[s - 1], String(counts[s - 1]), Math.round(counts[s - 1] / total * 100) + "%"]; });
+    var table = tableHTML(["Rating", "Responses", "Share"], rows), W = 520, H = 230, o;
+    if (mode === "bar") {
+      var L = 30, R = 8, T = 20, B = 30, pw = W - L - R, ph = H - T - B, mx = Math.max.apply(null, counts), top = Math.max(4, Math.ceil(mx / 4) * 4), gw = pw / 5, bw = Math.min(24, gw * 0.5);
+      o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Number of responses for each overall rating">';
+      for (var t = 0; t <= 4; t++) { var gy = T + ph - ph * t / 4, tv = Math.round(top * t / 4); o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + tv + "</text>"; }
+      counts.forEach(function (c, i) {
+        var x = L + i * gw + (gw - bw) / 2, h = ph * c / top, y = T + ph - h, tip = (i + 1) + " · " + SCORE_NAMES[i] + ": " + c + (c === 1 ? " response" : " responses") + " (" + Math.round(c / total * 100) + "%)";
+        if (c > 0) o += '<path class="o' + (i + 1) + '" d="' + barPath(x, y, bw, h, 4) + '"/><text class="val" x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + c + "</text>";
+        o += '<rect class="hit" x="' + (x - 6) + '" y="' + T + '" width="' + (bw + 12) + '" height="' + ph + '" data-tip="' + esc(tip) + '"/><text class="ax" x="' + (L + i * gw + gw / 2) + '" y="' + (H - 10) + '" text-anchor="middle">' + (i + 1) + "</text>";
+      });
+      o += '<text class="ax" x="' + (W - R) + '" y="' + (T - 6) + '" text-anchor="end">Rating: 1 = needs significant improvement, 5 = excellent</text></svg>';
+    } else {
+      var cx = 108, cy = 115, RR = 92, rr = 58, a = 0;
+      o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Share of each overall rating">';
+      [5, 4, 3, 2, 1].forEach(function (s) {
+        var c = counts[s - 1]; if (!c) return;
+        var frac = c / total, tip = s + " · " + SCORE_NAMES[s - 1] + ": " + c + (c === 1 ? " response" : " responses") + " (" + Math.round(frac * 100) + "%)";
+        var d = frac > 0.9999 ? "M" + (cx - RR) + "," + cy + "a" + RR + "," + RR + " 0 1,0 " + 2 * RR + ",0a" + RR + "," + RR + " 0 1,0 " + (-2 * RR) + ",0ZM" + (cx - rr) + "," + cy + "a" + rr + "," + rr + " 0 1,0 " + 2 * rr + ",0a" + rr + "," + rr + " 0 1,0 " + (-2 * rr) + ",0Z" : arcPath(cx, cy, RR, rr, a, a + frac * 2 * Math.PI);
+        o += '<path class="slice o' + s + '" fill-rule="evenodd" d="' + d + '" data-tip="' + esc(tip) + '"/>'; a += frac * 2 * Math.PI;
+      });
+      o += '<text class="big" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle">' + total + '</text><text class="ax" x="' + cx + '" y="' + (cy + 22) + '" text-anchor="middle">' + (total === 1 ? "response" : "responses") + "</text>";
+      [5, 4, 3, 2, 1].forEach(function (s, i) {
+        var y = 52 + i * 31, c = counts[s - 1];
+        o += '<rect class="sw o' + s + '" x="236" y="' + (y - 11) + '" width="13" height="13" rx="3"/><text class="lab" x="258" y="' + y + '">' + s + " · " + SCORE_NAMES[s - 1] + '</text><text class="lab num" x="' + (W - 6) + '" y="' + y + '" text-anchor="end">' + c + "  (" + Math.round(c / total * 100) + "%)</text>";
+      });
+      o += "</svg>";
+    }
+    return { svg: o, table: table };
+  }
+
+  /* put a chart (and its "show as table" view) into a box */
+  function mount(id, res) {
+    var el = $(id); if (!el) return;
+    el.innerHTML = res.svg + (res.table ? '<details class="tv"><summary>Show as table</summary>' + res.table + "</details>" : "");
+  }
+  function renderCharts() {
+    mount("ch-cats", chartCats(shown)); mount("ch-trend", chartTrend(shown)); mount("ch-dist", chartDist(shown, distMode));
+    $("dist-pie").setAttribute("aria-pressed", distMode === "pie"); $("dist-bar").setAttribute("aria-pressed", distMode === "bar");
+  }
+
+  /* one small tooltip for every chart (hover with a mouse, tap on a phone) */
+  var tipEl = document.createElement("div"); tipEl.className = "chart-tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
+  function tipAt(e) {
+    var t = e.target.closest && e.target.closest("[data-tip]");
+    if (!t) { tipEl.hidden = true; return; }
+    tipEl.textContent = t.getAttribute("data-tip"); tipEl.hidden = false;
+    var w = tipEl.offsetWidth, x = Math.min(Math.max(8, e.clientX - w / 2), window.innerWidth - w - 8);
+    tipEl.style.left = x + "px"; tipEl.style.top = Math.max(8, e.clientY - tipEl.offsetHeight - 14) + "px";
+  }
+  document.addEventListener("mousemove", tipAt); document.addEventListener("click", tipAt);
+  document.addEventListener("scroll", function () { tipEl.hidden = true; }, true);
+
+  /* ================= REPORT (a designed page you can print or save as PDF) ================= */
+  var showNames = false;
+  function cap(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : w; }
+  function who(x) { return showNames ? String(x.email).split("@")[0].split(/[._-]+/).map(cap).join(" ") : "Colleague"; }
+  function periodText() {
+    var p = $("period").value, r = range();
+    if (p === "all") return "All time";
+    var days = shown.map(function (x) { return x._day; }).sort();
+    if (p === "custom" && (r[0] === "0000-01-01" || r[1] === "9999-12-31")) return days.length ? nice(days[0]) + " – " + nice(days[days.length - 1]) : "Selected dates";
+    return nice(r[0]) + " – " + nice(r[1]);
+  }
+  function tile(label, v, n) {
+    return '<div class="tile"><span>' + label + "</span><b>" + (v === null ? "–" : r1(v).toFixed(1)) + (v === null ? "" : "<small> / 5</small>") + '</b><div class="meter"><i style="width:' + (v === null ? 0 : Math.round(v / 5 * 100)) + '%"></i></div></div>';
+  }
+  function reportHTML() {
+    var list = shown, years = yearsOf(list), now = new Date();
+    var yl = $("yr").value ? "Year " + $("yr").value : "Year 6 and Year 7";
+    var weeks = Object.keys(list.reduce(function (a, x) { a[x._mon] = 1; return a; }, {})).length;
+    var h = '<header class="rhead"><div><p class="rkick">IPT FEEDBACK REPORT</p><h1>' + esc(periodText()) + '</h1><p class="rsub">' + esc(yl) + " · " + list.length + (list.length === 1 ? " response" : " responses") + " · prepared " + nice(fmtDay(now)) + '</p></div><img class="rlogo" src="assets/logo-menu.png" alt="" onerror="this.remove()"></header><div class="rbody">';
+    if (!list.length) return h + '<p class="chart-empty">There is no feedback in this selection.</p></div>';
+    h += '<section class="rsec"><h2>At a glance</h2><div class="tiles"><div class="tile"><span>Responses</span><b>' + list.length + '</b><div class="sub6">' + years.map(function (y) { return "Year " + y + ": " + list.filter(function (x) { return x.year === y; }).length; }).join(" · ") + "</div></div>" +
+      CATS.map(function (c) { return tile(c[1], avg(list, c[0])); }).join("") + "</div></section>";
+    h += '<section class="rsec"><h2>The numbers</h2><div class="rgrid"><div class="chart-card"><h3>Scores by category</h3><p class="cap">Average score out of 5</p>' + chartCats(list).svg + '</div><div class="chart-card"><h3>How the week was rated</h3><p class="cap">Share of each overall rating</p>' + chartDist(list, "pie").svg + "</div>" +
+      (weeks > 1 ? '<div class="chart-card wide"><h3>Week by week</h3><p class="cap">Average overall rating</p>' + chartTrend(list).svg + "</div>" : "") + "</div></section>";
+    var qs = [["worked", "What worked well"], ["challenge", "What didn’t work"], ["plan", "Ideas for the next plan"], ["notes", "One more thought"]];
+    years.forEach(function (y) {
+      var sub = list.filter(function (x) { return x.year === y; });
+      h += '<section class="rsec ry' + y + '"><h2><span class="ypill">Year ' + y + "</span> in their own words</h2><p class=\"cap\">" + sub.length + (sub.length === 1 ? " response" : " responses") + " · overall " + (avg(sub, "overall") === null ? "–" : r1(avg(sub, "overall")).toFixed(1)) + " out of 5</p>";
+      qs.forEach(function (q) {
+        var items = sub.filter(function (x) { var t = (x[q[0]] || "").trim(); return t && t !== "-"; }).sort(function (a, b) { return b._d - a._d; });
+        if (!items.length) return;
+        h += '<div class="rq"><h3>' + q[1] + "</h3>" + items.map(function (x) { return '<blockquote class="rc"><p>' + esc(x[q[0]]) + "</p><footer>" + esc(who(x)) + " · " + esc(x.week) + " · " + nice(x._day) + "</footer></blockquote>"; }).join("") + "</div>";
+      });
+      h += "</section>";
+    });
+    return h + '<footer class="rfoot">Generated from the IPT Feedback admin page. Scores are averages of teachers’ ratings from 1 to 5.</footer></div>';
+  }
+  function openReport() {
+    $("rpage").innerHTML = reportHTML(); $("report").hidden = false; document.body.classList.add("has-report"); $("report").scrollTop = 0;
+  }
+  function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
+
   /* ---------- wiring ---------- */
   if (!URL_ || !KEY) {
     document.querySelector(".wrap").innerHTML = '<section class="card login"><h1>Not set up yet</h1><p class="dim" style="margin-top:8px">Add the Supabase address and key to config.js, then reload this page.</p></section>';
@@ -335,6 +623,13 @@
   setInterval(autoTick, AUTO_MS);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) autoTick(); });   // coming back to the tab refreshes right away
   $("xlsx").addEventListener("click", download);
+  $("report-btn").addEventListener("click", openReport);
+  $("rclose").addEventListener("click", closeReport);
+  $("rprint").addEventListener("click", function () { window.print(); });
+  $("rnames").addEventListener("change", function () { showNames = $("rnames").checked; $("rpage").innerHTML = reportHTML(); });
+  $("dist-pie").addEventListener("click", function () { distMode = "pie"; renderCharts(); });
+  $("dist-bar").addEventListener("click", function () { distMode = "bar"; renderCharts(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("report").hidden) closeReport(); });
   $("period").addEventListener("change", function () { var c = $("period").value === "custom"; $("from-box").hidden = !c; $("to-box").hidden = !c; render(); });
   ["from", "to", "yr"].forEach(function (id) { $(id).addEventListener("change", render); });
   $("find").addEventListener("input", render);
