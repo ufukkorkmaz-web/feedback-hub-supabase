@@ -920,6 +920,7 @@ function celebrate(y) {
   try { fireConfetti(CONFETTI_COLORS[y]); } catch (err) { console.error("Confetti failed:", err); }
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
   // Menu first, so it always works
   document.getElementById("open-year6").addEventListener("click", () => showView("year6-view"));
