@@ -217,7 +217,8 @@
   <div class="rbar"><strong>Report preview</strong>
     <span style="display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="rnames"> Show the sender’s email on each comment</label>
-      <button class="btn" id="rprint" type="button">Print / Save as PDF</button>
+      <button class="btn" id="rsave" type="button">Save as PDF</button>
+      <button class="btn ghost" id="rprint" type="button">Print</button>
       <button class="btn ghost" id="rclose" type="button">Close</button>
     </span></div>
   <div class="rpage viz light" id="rpage"></div>
@@ -225,6 +226,7 @@
 
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 (function () {
   "use strict";
@@ -605,6 +607,35 @@
   function openReport() {
     $("rpage").innerHTML = reportHTML(); $("report").hidden = false; document.body.classList.add("has-report"); $("report").scrollTop = 0;
   }
+
+  /* One-click PDF download. Falls back to the print window if the PDF tool could not load. */
+  function inlineSvgStyles(root) {
+    // The charts take their colours from the page's style sheet; copy the final colours onto each shape so they survive the PDF capture.
+    root.querySelectorAll("svg *").forEach(function (el) {
+      var cs = getComputedStyle(el), s = el.style;
+      s.fill = cs.fill; s.stroke = cs.stroke; s.strokeWidth = cs.strokeWidth; s.fontSize = cs.fontSize; s.fontWeight = cs.fontWeight; s.fontFamily = cs.fontFamily; s.opacity = cs.opacity;
+    });
+  }
+  function pdfName() {
+    var days = shown.map(function (x) { return x._day; }).sort();
+    return "IPT-feedback-report" + (days.length ? "_" + days[0] + "_to_" + days[days.length - 1] : "") + ".pdf";
+  }
+  function savePdf() {
+    var btn = $("rsave"), label = btn.textContent;
+    if (!window.html2pdf) { window.print(); return; }
+    btn.disabled = true; btn.textContent = "Preparing PDF…";
+    var done = function () { btn.disabled = false; btn.textContent = label; };
+    try {
+      var el = $("rpage"); $("report").scrollTop = 0; inlineSvgStyles(el);
+      window.html2pdf().set({
+        margin: [8, 8, 10, 8], filename: pdfName(),
+        image: { type: "jpeg", quality: 0.96 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0, windowWidth: 920 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"], avoid: [".rc", ".chart-card", ".tile", ".rq h3", ".rsec h2", ".rhead"] }
+      }).from(el).save().then(done).catch(function () { done(); window.print(); });
+    } catch (e) { done(); window.print(); }
+  }
   function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
 
   /* ---------- wiring ---------- */
@@ -625,6 +656,7 @@
   $("xlsx").addEventListener("click", download);
   $("report-btn").addEventListener("click", openReport);
   $("rclose").addEventListener("click", closeReport);
+  $("rsave").addEventListener("click", savePdf);
   $("rprint").addEventListener("click", function () { window.print(); });
   $("rnames").addEventListener("change", function () { showNames = $("rnames").checked; $("rpage").innerHTML = reportHTML(); });
   $("dist-pie").addEventListener("click", function () { distMode = "pie"; renderCharts(); });
