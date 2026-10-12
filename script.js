@@ -1,3 +1,4 @@
+/* IPT Feedback · Created by Ufuk Korkmaz, 2026. */
 /* ============ SETTINGS ============ */
 // Where submissions are sent (see README). Google Apps Script web-app URL or Formspree URL.
 // (Both values below come from config.js. The text after || is only a safety net if that file is missing.)
@@ -891,7 +892,8 @@ function showThanks(y, returnTo) {
       <p class="t-kicker mb-2 uppercase" style="font-size:14px;">${c.kicker}</p>
       <h2 id="thanks-title" class="t-title" style="font-size:28px;line-height:1.2;">Thank you for your feedback</h2>
       <p id="thanks-text" class="t-intro mt-3" style="font-size:16px;">Your ${c.label} reflections have been saved. They help us improve together.</p>
-      <button type="button" class="thanks-close mt-6 inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-3 font-bold shadow-lg" style="${c.submitBtn}"><span style="color:${c.submitTxt};">Back to main page</span></button>
+      ${window.IPTBoost && window.IPTBoost.supported() && (CFG.boost || {}).enabled !== false ? `<button type="button" class="thanks-boost mt-5 inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-2.5 font-semibold" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#eef5ff;">Need a boost? ✨</button><br>` : ""}
+      <button type="button" class="thanks-close mt-4 inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-3 font-bold shadow-lg" style="${c.submitBtn}"><span style="color:${c.submitTxt};">Back to main page</span></button>
     </div>`;
   const closeBtn = overlay.querySelector(".thanks-close");
   let closed = false;
@@ -904,9 +906,15 @@ function showThanks(y, returnTo) {
     if (goHome !== true && returnTo && returnTo.focus) { try { returnTo.focus({ preventScroll: true }); } catch (err) {} }
   };
   const onKey = e => {
+    if (document.querySelector(".boost-overlay")) return;      // the mirror box handles its own keys
     if (e.key === "Escape") { e.preventDefault(); close(false); }
-    else if (e.key === "Tab") { e.preventDefault(); closeBtn.focus(); }   // only one control: keep focus inside the box
+    else if (e.key === "Tab") {                                              // keep focus inside the box
+      const f = [...overlay.querySelectorAll("button")], i = f.indexOf(document.activeElement);
+      e.preventDefault(); f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+    }
   };
+  const boostBtn = overlay.querySelector(".thanks-boost");
+  if (boostBtn) boostBtn.addEventListener("click", () => window.IPTBoost.open(boostBtn));
   closeBtn.addEventListener("click", () => close(true));
   overlay.addEventListener("click", e => { if (e.target === overlay) close(false); });
   document.addEventListener("keydown", onKey, true);
