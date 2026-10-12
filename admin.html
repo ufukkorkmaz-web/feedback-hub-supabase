@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- IPT Feedback · Created by Ufuk Korkmaz, 2026. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -629,6 +630,13 @@
     host.style.cssText = "position:absolute;left:-10000px;top:0;width:" + pageW + "px;margin:0;padding:0";
     root.style.width = pageW + "px"; host.appendChild(root); document.body.appendChild(host);
     try {
+      // The PDF tool cannot work out how big a chart should be from "width:100%" alone and draws it far too large.
+      // So each chart is given its real size in pixels, measured here at the same page width.
+      root.querySelectorAll("svg").forEach(function (svg) {
+        var b = svg.getBoundingClientRect(); if (!b.width || !b.height) return;
+        svg.setAttribute("width", Math.round(b.width)); svg.setAttribute("height", Math.round(b.height));
+        svg.style.width = Math.round(b.width) + "px"; svg.style.height = Math.round(b.height) + "px"; svg.style.maxWidth = "none";
+      });
       var list = root.querySelectorAll(".rhead, .tiles, .chart-card, .rc, .rsec h2, .rq h3");
       for (var i = 0; i < list.length; i++) {
         var el = list[i], base = root.getBoundingClientRect().top, r = el.getBoundingClientRect();
