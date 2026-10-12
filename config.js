@@ -1,3 +1,4 @@
+/* IPT Feedback · Created by Ufuk Korkmaz, 2026. */
 /* ==========================================================================
    IPT FEEDBACK SETTINGS
    This is the one file you edit for everyday changes. Save it, upload it to
@@ -16,6 +17,21 @@ window.IPT_CONFIG = {
 
   /* ----- Only school emails ending with this can open the questions ----- */
   emailDomain: "bilfen.k12.tr",
+
+  /* ----- "Need a boost?" mirror on the thank-you screen ----- */
+  boost: {
+    enabled: true,                                    // false = hide the button
+    firstImage: "you-make-it-happen.png",             // the hand-lettered picture shown for the first message ("" = plain writing instead)
+    messages: [                                       // shown one after another over the camera picture; the first one appears first
+      "You make it happen!",
+      "Your students are lucky to have you",
+      "Small steps, big impact",
+      "You are doing great work",
+      "Thank you for showing up",
+      "Look at that smile. Keep going!",
+      "Teachers change the world, one lesson at a time"
+    ]
+  },
 
   /* ----- Online meetings ----- */
   timezone: "Europe/Istanbul",                        // the time zone the meeting times below are written in
