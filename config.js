@@ -21,9 +21,11 @@ window.IPT_CONFIG = {
   /* ----- "Need a boost?" mirror on the thank-you screen ----- */
   boost: {
     enabled: true,                                    // false = hide the button
-    firstImage: "you-make-it-happen.png",             // the hand-lettered picture shown for the first message ("" = plain writing instead)
-    messages: [                                       // shown one after another over the camera picture; the first one appears first
-      "You make it happen!",
+    // Each line is either a message or the file name of a hand-lettered picture (.png) kept next to index.html.
+    // They are shown one after another over the camera picture.
+    messages: [
+      "you-make-it-happen.png",
+      "you-are-the-best.png",
       "Your students are lucky to have you",
       "Small steps, big impact",
       "You are doing great work",
