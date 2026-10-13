@@ -21,9 +21,11 @@
     "Teachers change the world, one lesson at a time"
   ];
   var MESSAGES = (Array.isArray(CFG.messages) && CFG.messages.length ? CFG.messages : DEFAULTS).map(String);
+  // A message can be plain writing, or the file name of a hand-lettered picture (ending in .png, .webp, .jpg, .jpeg, .gif or .svg).
+  var IS_PIC = /\.(png|webp|jpe?g|gif|svg)$/i;
+  if (CFG.firstImage && !IS_PIC.test(MESSAGES[0])) MESSAGES[0] = String(CFG.firstImage);      // older setting: a picture for the first message
   var VISION = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
   var MODEL = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
-  var IMAGE = CFG.firstImage === undefined ? "you-make-it-happen.png" : CFG.firstImage;   // hand-lettered picture shown for the very first message ("" = use plain writing)
   var FONT = '"Pacifico", "Brush Script MT", cursive';
   var ROTATE_MS = 5200;
 
@@ -93,8 +95,14 @@
         msg = overlay.querySelector(".boost-msg"), note = overlay.querySelector(".boost-note"), flash = overlay.querySelector(".boost-flash"),
         photoBtn = overlay.querySelector('[data-a="photo"]');
 
-    var pic = null;                                                          // the hand-lettered picture, once it has loaded
-    if (IMAGE) { var im = new Image(); im.onload = function () { pic = im; if (idx === 0 && !closed && msg.textContent) showMsg(0, true); }; im.src = IMAGE; }
+    var pics = {}, curPic = null;                                            // hand-lettered pictures: file name -> loaded image (or false if it could not load)
+    MESSAGES.forEach(function (m) {
+      if (!IS_PIC.test(m) || m in pics) return;
+      var im = new Image(); pics[m] = null;
+      im.onload = function () { pics[m] = im; if (!closed && MESSAGES[idx % MESSAGES.length] === m && !curPic && msg.textContent === "" && !msg.querySelector("img")) showMsg(idx, true); };
+      im.onerror = function () { pics[m] = false; };
+      im.src = m;
+    });
     var stream = null, detector = null, raf = 0, rotTimer = 0, closed = false, idx = 0;
     var pos = { x: 0.5, y: 0.72, ready: false }, target = { x: 0.5, y: 0.72 }, lastFace = 0, lastVT = -1, lastTs = 0;
 
@@ -105,11 +113,13 @@
     }
     function showMsg(i, instant) {
       var apply = function () {
-        var first = i % MESSAGES.length === 0;
-        if (first && pic) {                                                  // first message: the hand-lettered picture
-          msg.textContent = ""; var im = document.createElement("img"); im.src = pic.src; im.alt = ""; im.style.cssText = "display:block;width:100%;height:auto";
+        var m = MESSAGES[i % MESSAGES.length];
+        if (IS_PIC.test(m)) {
+          if (pics[m] === false) { nextMsg(); return; }                       // this picture could not be loaded: move on
+          if (!pics[m]) return;                                              // still loading: it appears as soon as it is ready
+          curPic = pics[m]; msg.textContent = ""; var im = document.createElement("img"); im.src = curPic.src; im.alt = ""; im.style.cssText = "display:block;width:100%;height:auto";
           msg.style.width = picWidth() + "px"; msg.appendChild(im); msg.setAttribute("data-pic", "1");
-        } else { msg.style.width = ""; msg.removeAttribute("data-pic"); msg.textContent = MESSAGES[i % MESSAGES.length]; }
+        } else { curPic = null; msg.style.width = ""; msg.removeAttribute("data-pic"); msg.textContent = m; }
         msg.classList.remove("off");
       };
       if (instant || reduceMotion()) { apply(); return; }
@@ -161,10 +171,10 @@
       var x = c.getContext("2d"); x.scale(dpr, dpr);
       var sc = Math.max(W / vw, H / vh), dw = vw * sc, dh = vh * sc;
       x.save(); x.translate(W, 0); x.scale(-1, 1); x.drawImage(video, (W - dw) / 2, (H - dh) / 2, dw, dh); x.restore();      // mirrored, like the screen
-      if (msg.getAttribute("data-pic") && pic) {                              // the picture already has its own white edge
+      if (msg.getAttribute("data-pic") && curPic) {                              // the picture already has its own white edge
         var iw = msg.offsetWidth, ih = msg.offsetHeight, pp = place();
         x.shadowColor = "rgba(0,0,0,.35)"; x.shadowBlur = 12; x.shadowOffsetY = 3;
-        x.drawImage(pic, pp.cx * W - iw / 2, pp.top, iw, ih);
+        x.drawImage(curPic, pp.cx * W - iw / 2, pp.top, iw, ih);
         return finish(c);
       }
       var fs = parseFloat(msg.style.fontSize) || 36, text = msg.textContent, maxW = W * 0.84, words = text.split(/\s+/), lines = [], cur = "";
