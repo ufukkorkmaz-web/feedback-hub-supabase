@@ -239,7 +239,53 @@ function showView(id) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/* ---- Progress bar at the top of each form: fills as the ten answers are completed ---- */
+function setupProgress(y) {
+  const form = document.getElementById(y + "-form"); if (!form || form.querySelector(".fp-bar")) return;
+  if (!document.getElementById("fp-css")) {
+    const st = document.createElement("style"); st.id = "fp-css";
+    st.textContent =
+      ".fp-bar{position:sticky;top:8px;z-index:40;display:flex;align-items:center;gap:.9rem;padding:.65rem 1rem;border-radius:999px;color:#eef5ff;font-size:14px;font-weight:600;" +
+        "background:rgba(10,28,72,.72);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(1,10,37,.35)}" +
+      ".fp-track{position:relative;flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}" +
+      ".fp-fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:999px;background:linear-gradient(90deg,var(--fp-a,#52d9ca),var(--fp-b,#658ff1));transition:width .45s cubic-bezier(.2,.8,.2,1)}" +
+      ".fp-bar.done .fp-fill{box-shadow:0 0 16px var(--fp-b,#658ff1)}" +
+      ".fp-count{min-width:5.2rem;text-align:right;white-space:nowrap}" +
+      ".fp-bar.done .fp-count{color:#9cf0c8}" +
+      "@media (prefers-reduced-motion:reduce){.fp-fill{transition:none}}";
+    document.head.appendChild(st);
+  }
+  const bar = document.createElement("div"); bar.className = "fp-bar";
+  bar.style.setProperty("--fp-a", y === "year6" ? "#fff15d" : "#52d9ca"); bar.style.setProperty("--fp-b", y === "year6" ? "#35c9f4" : "#658ff1");
+  bar.setAttribute("role", "progressbar"); bar.setAttribute("aria-label", "Form progress"); bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", "10");
+  bar.innerHTML = '<span>Progress</span><span class="fp-track"><span class="fp-fill"></span></span><span class="fp-count" aria-live="polite"></span>';
+  form.insertBefore(bar, form.firstChild);
+  const fill = bar.querySelector(".fp-fill"), count = bar.querySelector(".fp-count"), g = id => document.getElementById(`${y}-${id}`);
+  let touched = false, last = -1;
+  g("clarity").addEventListener("input", () => { touched = true; });
+  form.addEventListener("reset", () => { touched = false; });
+  const answered = () => {
+    const email = g("email");
+    return [
+      email.checkValidity() && EMAIL_RE.test(email.value.trim()),
+      g("week").value.trim() !== "",
+      g("worked").value.trim() !== "", g("challenge").value.trim() !== "", g("plan").value.trim() !== "",
+      g("overall").value !== "", g("resources").value !== "", g("engagement").value !== "",
+      touched, g("notes").value.trim() !== ""
+    ].filter(Boolean).length;
+  };
+  const update = () => {
+    const n = answered(); if (n === last) return; last = n;
+    fill.style.width = (n * 10) + "%"; bar.setAttribute("aria-valuenow", String(n));
+    bar.classList.toggle("done", n === 10);
+    count.textContent = n === 10 ? "All set ✓" : n + " of 10";
+  };
+  update();
+  setInterval(update, 500);       // also catches answers filled in by voice or restored from a saved draft
+}
+
 function setupForm(y) {
+  setupProgress(y);
   const form = document.getElementById(y + "-form"), email = document.getElementById(y + "-email");
   const sections = form.querySelectorAll(".question-section"), slider = document.getElementById(y + "-clarity");
   const output = document.getElementById(y + "-output"), status = document.getElementById(y + "-status");
