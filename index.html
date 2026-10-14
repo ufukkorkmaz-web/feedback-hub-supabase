@@ -255,6 +255,7 @@
   <div id="year7-view" class="view"></div>
 
   <script src="config.js"></script>
+  <script src="welcome.js"></script>
   <script src="boost.js"></script>
   <script src="script.js"></script>
   <script src="calendar.js"></script>
@@ -388,14 +389,24 @@
       var intro = document.getElementById("intro");
       var ready = function () { document.body.classList.add("page-ready"); };
       var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!intro || reduce || window.__pv) { ready(); if (intro) intro.remove(); return; }
-      var t = setTimeout(ready, 1250);                     // boxes start rising as the intro fades
+      // After Saturn: ask for the name (first visit) and show the welcome screen, then the boxes rise in. If that script is missing, go straight to the boxes.
+      var began = false;
+      function begin() {
+        if (began) return; began = true;
+        try { if (window.IPTWelcome && !window.__pv) { window.IPTWelcome.run(ready); return; } } catch (e) { console.error("Welcome failed:", e); }
+        ready();
+      }
+      var known = false;
+      try { known = !!(window.IPTWelcome && window.IPTWelcome.getName()); } catch (e) {}
+      // Returning visitor (name saved): no big Saturn intro, go straight to "Welcome back" with the small Saturn.
+      if (!intro || reduce || window.__pv || known) { begin(); if (intro) intro.remove(); return; }
+      var t = setTimeout(begin, 1250);                     // the welcome starts as the intro fades
       function done() { if (intro && intro.parentNode) intro.parentNode.removeChild(intro); intro = null; }
-      function skip() { if (!intro) return; clearTimeout(t); ready(); intro.classList.add("skip"); }
+      function skip() { if (!intro) return; clearTimeout(t); begin(); intro.classList.add("skip"); }
       intro.addEventListener("animationend", function (e) { if (e.target === intro) done(); });
       intro.addEventListener("click", skip);
       document.addEventListener("keydown", function (e) { if (intro && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip(); });
-      setTimeout(ready, 4000);   // safety nets
+      setTimeout(begin, 4000);   // safety nets
       setTimeout(done, 5000);
     })();
   </script>
