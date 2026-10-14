@@ -8,7 +8,7 @@
    ============================================================================ */
 (function () {
   "use strict";
-  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 2000;
+  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 3000;
   var reduce = function () { return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; };
 
   function read(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
@@ -64,9 +64,12 @@
       ".ws-name{color:#fff;text-shadow:0 0 12px rgba(255,255,255,.6),0 0 30px rgba(121,235,221,.8),0 0 64px rgba(101,143,241,.7);animation:wsGlow 2.2s ease-in-out 1.2s infinite alternate}" +
       "@keyframes wsUp{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}" +
       "@keyframes wsGlow{from{filter:brightness(1)}to{filter:brightness(1.22)}}" +
-      ".ws-whoami{position:fixed;left:12px;bottom:12px;z-index:9600;display:none;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:999px;font:500 13px Work Sans,system-ui,sans-serif;color:#d6e2fb;cursor:pointer;" +
-        "background:rgba(10,28,72,.55);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}" +
-      ".ws-whoami:hover{color:#fff;background:rgba(10,28,72,.8)}" +
+      ".ws-whoami{position:fixed;left:12px;bottom:12px;z-index:9600;display:none;align-items:center;gap:0;height:22px;min-width:22px;padding:0 5px;border-radius:999px;font:500 13px Work Sans,system-ui,sans-serif;color:#d6e2fb;cursor:pointer;white-space:nowrap;overflow:hidden;" +
+        "background:rgba(10,28,72,.45);border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:gap .3s ease,padding .3s ease,background .2s ease}" +
+      ".ws-whoami .ws-dot{flex:none;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#79ebdd 60%,#658ff1);box-shadow:0 0 8px rgba(121,235,221,.7)}" +
+      ".ws-whoami .ws-lbl{max-width:0;opacity:0;overflow:hidden;transition:max-width .35s ease,opacity .25s ease}" +
+      ".ws-whoami:hover,.ws-whoami:focus-visible,.ws-whoami.open{gap:.5rem;padding:0 .8rem 0 .6rem;color:#fff;background:rgba(10,28,72,.8)}" +
+      ".ws-whoami:hover .ws-lbl,.ws-whoami:focus-visible .ws-lbl,.ws-whoami.open .ws-lbl{max-width:260px;opacity:1}" +
       ".ws-whoami:focus-visible{outline:3px solid #52d9ca;outline-offset:2px}" +
       "body:has(#menu-view.active) .ws-whoami{display:inline-flex}" +
       "@media (prefers-reduced-motion:reduce){.ws-overlay,.ws-card{transition:none}.ws-field{animation:none}.ws-splash .ws-saturn,.ws-line,.ws-name{animation:none}}";
@@ -139,8 +142,17 @@
     var old = document.querySelector(".ws-whoami"); if (old) old.remove();
     var name = getName(), b = document.createElement("button");
     b.type = "button"; b.className = "ws-whoami";
-    b.textContent = name ? "Not " + name + "? Change name" : "Add your name";
-    b.addEventListener("click", change);
+    var label = name ? "Not " + name + "? Change name" : "Add your name";
+    b.setAttribute("aria-label", label);
+    b.innerHTML = '<span class="ws-dot"></span><span class="ws-lbl"></span>';
+    b.querySelector(".ws-lbl").textContent = label;
+    b.addEventListener("click", function () {
+      // On touch screens (no hover) the first tap opens the dot, the second one changes the name.
+      if (window.matchMedia && window.matchMedia("(hover: none)").matches && !b.classList.contains("open")) {
+        b.classList.add("open"); setTimeout(function () { b.classList.remove("open"); }, 4000); return;
+      }
+      b.classList.remove("open"); change();
+    });
     document.body.appendChild(b);
   }
 
