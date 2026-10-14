@@ -8,7 +8,7 @@
    ============================================================================ */
 (function () {
   "use strict";
-  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 3000;
+  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 2000;
   var reduce = function () { return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; };
 
   function read(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
